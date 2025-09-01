@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Record Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .modal-backdrop {
+            display: none;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 40;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .modal {
+            display: none; position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            animation: slideIn 0.3s ease-out;
+            max-height: 90vh;
+        }
+        .toast {
+            position: fixed; bottom: -100px; left: 50%;
+            transform: translateX(-50%);
+            transition: bottom 0.5s ease-in-out;
+            z-index: 60;
+        }
+        .toast.show { bottom: 20px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translate(-50%, -40%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
+        
+        /* Modern Scrollbar for the entire page */
+        html::-webkit-scrollbar {
+            width: 12px;
+        }
+        html::-webkit-scrollbar-track {
+            background: #f8fafc; /* Tailwind slate-50 */
+        }
+        html::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1; /* Tailwind slate-300 */
+            border-radius: 20px;
+            border: 3px solid #f8fafc; /* Tailwind slate-50 */
+        }
+         html::-webkit-scrollbar-thumb:hover {
+            background-color: #94a3b8; /* Tailwind slate-400 */
+        }
+
+        html.dark::-webkit-scrollbar-track {
+            background: #0f172a; /* Tailwind slate-900 */
+        }
+        html.dark::-webkit-scrollbar-thumb {
+            background-color: #334155; /* Tailwind slate-700 */
+             border-color: #0f172a; /* Tailwind slate-900 */
+        }
+        html.dark::-webkit-scrollbar-thumb:hover {
+            background-color: #475569; /* Tailwind slate-600 */
+        }
+        
+        .view-toggle button.active { background-color: #4338ca; color: white; }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Custom scrollbar for form modal */
+        .form-scroll-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .form-scroll-container::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+        .form-scroll-container::-webkit-scrollbar-thumb {
+            background-color: #d1d5db; /* light mode */
+            border-radius: 4px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        .form-scroll-container::-webkit-scrollbar-thumb:hover {
+            background-color: #9ca3af;
+        }
+
+        html.dark .form-scroll-container::-webkit-scrollbar-thumb {
+            background-color: #4b5563; /* dark mode */
+        }
+        html.dark .form-scroll-container::-webkit-scrollbar-thumb:hover {
+            background-color: #6b7280;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-300">
+
+    <!-- Main Container -->
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <div>
+                <h1 id="app-title" class="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Vehicle Records</h1>
+                <p class="text-gray-500 dark:text-gray-400 mt-1">A modern system to manage your vehicle transit data.</p>
+            </div>
+            <div class="flex items-center gap-2 md:gap-3">
+                 <button id="theme-toggle" class="p-2.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900">
+                     <svg id="theme-icon-light" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                     <svg id="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                 </button>
+                 <button id="settings-btn" class="p-2.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                 </button>
+                <button id="export-btn" class="w-full md:w-auto bg-white dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 text-gray-700 dark:text-gray-200 font-bold py-3 px-5 rounded-lg shadow-sm transition-colors duration-300 flex items-center justify-center space-x-2">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                     <span>Export</span>
+                 </button>
+                <button id="add-new-record-btn" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                     <span>New Record</span>
+                 </button>
+            </div>
+        </header>
+
+        <!-- Stats Section -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Records</p>
+                    <p id="stat-total-records" class="text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                </div>
+                <div class="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 rounded-full p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                </div>
+            </div>
+            <div class="stat-card bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">This Month</p>
+                    <p id="stat-this-month" class="text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                </div>
+                <div class="bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-300 rounded-full p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                </div>
+            </div>
+            <div class="stat-card bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Revenue</p>
+                    <p id="stat-total-revenue" class="text-3xl font-bold text-gray-900 dark:text-white">₹0</p>
+                </div>
+                <div class="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-600 dark:text-yellow-300 rounded-full p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                </div>
+            </div>
+             <div class="stat-card bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Balance</p>
+                    <p id="stat-pending-balance" class="text-3xl font-bold text-gray-900 dark:text-white">₹0</p>
+                </div>
+                <div class="bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-300 rounded-full p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="mb-6 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md">
+            <div class="flex flex-col md:flex-row gap-4 justify-between">
+                <div class="relative flex-grow">
+                    <input type="text" id="search-input" placeholder="Search by vehicle, owner, location..." class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 border-2 border-transparent rounded-lg py-3 px-4 pl-12 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </div>
+                </div>
+                 <div class="flex-shrink-0 view-toggle bg-gray-200 dark:bg-gray-700 rounded-lg p-1 flex items-center">
+                    <button id="card-view-btn" class="p-2 rounded-md" title="Card View">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                    </button>
+                    <button id="table-view-btn" class="p-2 rounded-md" title="Table View">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Records Grid -->
+        <div id="records-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Record cards will be dynamically inserted here -->
+        </div>
+        
+        <!-- Records Table -->
+        <div id="table-view-container" class="hidden overflow-x-auto bg-white dark:bg-gray-800 rounded-xl shadow-md">
+            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">ID</th>
+                        <th scope="col" class="px-6 py-3">Date</th>
+                        <th scope="col" class="px-6 py-3">Vehicle No.</th>
+                        <th scope="col" class="px-6 py-3">Owner</th>
+                        <th scope="col" class="px-6 py-3">Amount</th>
+                        <th scope="col" class="px-6 py-3">Balance</th>
+                        <th scope="col" class="px-6 py-3 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Table rows will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="no-records-message" class="text-center py-16 text-gray-500" style="display: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" /></svg>
+            <p class="mt-4 text-xl font-semibold">No records found.</p>
+            <p>Click "New Record" to get started.</p>
+        </div>
+    </div>
+
+    <!-- Modal Backdrop -->
+    <div id="modal-backdrop" class="modal-backdrop"></div>
+
+    <!-- Record Form Modal -->
+    <div id="record-modal" class="modal w-11/12 md:max-w-3xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700">
+        <form id="record-form" class="flex flex-col h-full">
+            <div class="p-6 sm:p-8 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <div class="flex justify-between items-center">
+                    <h2 id="modal-title" class="text-2xl font-bold text-gray-900 dark:text-white">Add New Record</h2>
+                    <button type="button" class="close-modal-btn p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 sm:p-8 space-y-6 overflow-y-auto form-scroll-container flex-grow min-h-0">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="recordDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+                        <input type="date" id="recordDate" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="vehicleNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vehicle Number</label>
+                        <input type="text" id="vehicleNumber" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="ownerName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Owner Name</label>
+                        <input type="text" id="ownerName" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                     <div>
+                        <label for="fromLocation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From</label>
+                        <input type="text" id="fromLocation" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="toLocation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To</label>
+                        <input type="text" id="toLocation" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity</label>
+                        <input type="text" id="quantity" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Payment Details</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Amount</label>
+                            <input type="number" id="amount" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="balance" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Balance</label>
+                            <input type="number" id="balance" readonly class="w-full bg-gray-200 dark:bg-gray-900 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600 rounded-lg p-2.5 cursor-not-allowed">
+                        </div>
+                    </div>
+                    <div id="payments-container" class="space-y-3 mt-4"></div>
+                    <button type="button" id="add-payment-btn" class="mt-3 text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium flex items-center space-x-1 text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" /></svg>
+                        <span>Add Payment</span>
+                    </button>
+                </div>
+                
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Custom Fields</h3>
+                        <button type="button" id="add-custom-field-btn" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium flex items-center space-x-1 text-sm">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                            <span>Add Field</span>
+                        </button>
+                    </div>
+                    <div id="custom-fields-container" class="space-y-3"></div>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-4 p-6 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                 <button type="reset" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold py-2.5 px-6 rounded-lg transition-colors">Reset</button>
+                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-8 rounded-lg shadow-lg transition-colors">Save</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal w-11/12 md:max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700">
+        <form id="settings-form" class="p-8 space-y-6">
+             <div class="flex justify-between items-center">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Settings</h2>
+                <button type="button" class="close-modal-btn text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div>
+                <label for="appTitleInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Application Title</label>
+                <input type="text" id="appTitleInput" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-8 rounded-lg shadow-lg transition-colors">Save Settings</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast bg-gray-900 dark:bg-white text-white dark:text-black py-2.5 px-6 rounded-full shadow-lg text-sm font-medium">
+        <p id="toast-message">Operation successful!</p>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="text-center mt-12 py-4">
+        <p class="text-sm text-gray-500 dark:text-gray-400">Powered by First Step Digital Agency</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- IndexedDB Wrapper ---
+            const db = {
+                name: 'VehicleRecordsDB',
+                version: 1,
+                instance: null,
+
+                open() {
+                    return new Promise((resolve, reject) => {
+                        if (this.instance) {
+                            resolve(this.instance);
+                            return;
+                        }
+                        const request = indexedDB.open(this.name, this.version);
+
+                        request.onupgradeneeded = (event) => {
+                            const db = event.target.result;
+                            if (!db.objectStoreNames.contains('records')) {
+                                const recordsStore = db.createObjectStore('records', { keyPath: 'id' });
+                                recordsStore.createIndex('vehicleNumber', 'vehicleNumber', { unique: false });
+                                recordsStore.createIndex('ownerName', 'ownerName', { unique: false });
+                            }
+                            if (!db.objectStoreNames.contains('settings')) {
+                                db.createObjectStore('settings', { keyPath: 'key' });
+                            }
+                        };
+
+                        request.onsuccess = (event) => {
+                            this.instance = event.target.result;
+                            resolve(this.instance);
+                        };
+
+                        request.onerror = (event) => {
+                            console.error('Database error:', event.target.errorCode);
+                            reject(event.target.errorCode);
+                        };
+                    });
+                },
+
+                async getStore(storeName, mode) {
+                    if (!this.instance) await this.open();
+                    return this.instance.transaction(storeName, mode).objectStore(storeName);
+                },
+
+                async put(storeName, item) {
+                    const store = await this.getStore(storeName, 'readwrite');
+                    return new Promise((resolve, reject) => {
+                        const request = store.put(item);
+                        request.onsuccess = resolve;
+                        request.onerror = reject;
+                    });
+                },
+
+                async delete(storeName, key) {
+                    const store = await this.getStore(storeName, 'readwrite');
+                     return new Promise((resolve, reject) => {
+                        const request = store.delete(key);
+                        request.onsuccess = resolve;
+                        request.onerror = reject;
+                    });
+                },
+
+                async getAll(storeName) {
+                    const store = await this.getStore(storeName, 'readonly');
+                    return new Promise((resolve) => {
+                        const request = store.getAll();
+                        request.onsuccess = () => resolve(request.result);
+                    });
+                }
+            };
+
+            // --- DOM Elements ---
+            const appTitleElement = document.getElementById('app-title');
+            const addNewRecordBtn = document.getElementById('add-new-record-btn');
+            const modalBackdrop = document.getElementById('modal-backdrop');
+            const recordModal = document.getElementById('record-modal');
+            const recordForm = document.getElementById('record-form');
+            const modalTitle = document.getElementById('modal-title');
+            const settingsBtn = document.getElementById('settings-btn');
+            const settingsModal = document.getElementById('settings-modal');
+            const settingsForm = document.getElementById('settings-form');
+            const appTitleInput = document.getElementById('appTitleInput');
+            const closeModalBtns = document.querySelectorAll('.close-modal-btn');
+            const recordsContainer = document.getElementById('records-container');
+            const tableViewContainer = document.getElementById('table-view-container');
+            const tableBody = document.getElementById('table-body');
+            const noRecordsMessage = document.getElementById('no-records-message');
+            const searchInput = document.getElementById('search-input');
+            const themeToggle = document.getElementById('theme-toggle');
+            const cardViewBtn = document.getElementById('card-view-btn');
+            const tableViewBtn = document.getElementById('table-view-btn');
+            const amountInput = document.getElementById('amount');
+            const balanceInput = document.getElementById('balance');
+            const addCustomFieldBtn = document.getElementById('add-custom-field-btn');
+            const customFieldsContainer = document.getElementById('custom-fields-container');
+            const paymentsContainer = document.getElementById('payments-container');
+            const addPaymentBtn = document.getElementById('add-payment-btn');
+            const exportBtn = document.getElementById('export-btn');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+
+            // --- State ---
+            let records = [];
+            let currentEditId = null;
+            let currentView = 'card';
+            let appTitle = 'Vehicle Records';
+            let lastId = 0;
+
+            // --- Main Functions ---
+            const updateBalance = () => {
+                const totalAmount = parseFloat(amountInput.value) || 0;
+                let totalPaid = 0;
+                document.querySelectorAll('.payment-entry-amount').forEach(input => {
+                    totalPaid += parseFloat(input.value) || 0;
+                });
+                balanceInput.value = (totalAmount - totalPaid).toFixed(2);
+            };
+            
+            const showToast = (message) => {
+                toastMessage.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            };
+
+            const openModal = (modalElement) => {
+                modalElement.style.display = 'block';
+                modalBackdrop.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            };
+            
+            const closeModal = () => {
+                document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+                modalBackdrop.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            };
+
+            const addPaymentField = (payment = { amount: '', date: new Date().toISOString().split('T')[0] }) => {
+                const paymentId = `payment-${Date.now()}`;
+                const paymentHTML = `
+                    <div id="${paymentId}" class="flex items-center space-x-2 payment-entry">
+                        <input type="number" value="${payment.amount}" placeholder="Amount" class="flex-1 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 payment-entry-amount">
+                        <input type="date" value="${payment.date}" class="w-auto bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 payment-entry-date">
+                        <button type="button" class="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full" onclick="document.getElementById('${paymentId}').remove(); this.closest('form').dispatchEvent(new Event('input', {bubbles:true}))">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                        </button>
+                    </div>
+                `;
+                paymentsContainer.insertAdjacentHTML('beforeend', paymentHTML);
+            };
+            
+            const openRecordModal = (recordId = null) => {
+                recordForm.reset();
+                customFieldsContainer.innerHTML = '';
+                paymentsContainer.innerHTML = '';
+                
+                if (recordId !== null) {
+                    currentEditId = recordId;
+                    modalTitle.textContent = 'Edit Record';
+                    const record = records.find(r => r.id === recordId);
+                    if (record) {
+                        document.getElementById('recordDate').value = record.recordDate;
+                        document.getElementById('vehicleNumber').value = record.vehicleNumber;
+                        document.getElementById('ownerName').value = record.ownerName;
+                        document.getElementById('fromLocation').value = record.fromLocation;
+                        document.getElementById('toLocation').value = record.toLocation;
+                        document.getElementById('quantity').value = record.quantity;
+                        document.getElementById('amount').value = record.amount;
+                        record.payments.forEach(p => addPaymentField(p));
+                        (record.customFields || []).forEach(field => addCustomField(field.label, field.value));
+                        updateBalance();
+                    }
+                } else {
+                    currentEditId = null;
+                    modalTitle.textContent = 'Add New Record';
+                    document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
+                    addPaymentField(); // Add one payment field by default
+                    updateBalance();
+                }
+                openModal(recordModal);
+            };
+
+            const addCustomField = (label = '', value = '') => {
+                const fieldId = `custom-${Date.now()}`;
+                const fieldHTML = `
+                    <div id="${fieldId}" class="flex items-center space-x-2 custom-field-entry">
+                        <input type="text" value="${label}" placeholder="Label (e.g., Driver Name)" class="flex-1 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 custom-field-label">
+                        <input type="text" value="${value}" placeholder="Value" class="flex-1 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 custom-field-value">
+                        <button type="button" class="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full" onclick="document.getElementById('${fieldId}').remove()">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                        </button>
+                    </div>
+                `;
+                customFieldsContainer.insertAdjacentHTML('beforeend', fieldHTML);
+            };
+            
+            const generateSequentialId = () => {
+                lastId++;
+                return lastId;
+            };
+
+            const loadData = async () => {
+                try {
+                    await db.open();
+                    const allSettings = await db.getAll('settings');
+                    const settings = allSettings.reduce((acc, s) => ({ ...acc, [s.key]: s.value }), {});
+
+                    appTitle = settings.appTitle || 'Vehicle Records';
+                    lastId = settings.lastId || 0;
+                    const savedView = settings.currentView || 'card';
+                    const savedTheme = settings.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+                    appTitleElement.textContent = appTitle;
+                    document.title = appTitle;
+                    applyTheme(savedTheme);
+
+                    const savedRecords = await db.getAll('records');
+                    records = savedRecords.map(r => {
+                        if (r.advancePaid && !r.payments) {
+                            r.payments = [{ amount: r.advancePaid, date: r.recordDate }];
+                            delete r.advancePaid;
+                        }
+                        if (!r.payments) r.payments = [];
+                        return r;
+                    });
+                    
+                    switchView(savedView, false); // false prevents re-saving
+                    updateStats();
+
+                } catch (error) {
+                     console.error("Failed to load data from IndexedDB", error);
+                    showToast("Error: Could not load data.");
+                }
+            };
+
+            const handleFormSubmit = async (e) => {
+                e.preventDefault();
+                const recordData = {
+                    recordDate: document.getElementById('recordDate').value,
+                    vehicleNumber: document.getElementById('vehicleNumber').value.toUpperCase(),
+                    ownerName: document.getElementById('ownerName').value,
+                    fromLocation: document.getElementById('fromLocation').value,
+                    toLocation: document.getElementById('toLocation').value,
+                    quantity: document.getElementById('quantity').value,
+                    amount: parseFloat(document.getElementById('amount').value) || 0,
+                    payments: Array.from(document.querySelectorAll('.payment-entry')).map(entry => ({
+                        amount: parseFloat(entry.querySelector('.payment-entry-amount').value) || 0,
+                        date: entry.querySelector('.payment-entry-date').value,
+                    })).filter(p => p.amount > 0),
+                    customFields: Array.from(document.querySelectorAll('.custom-field-entry')).map(entry => ({
+                        label: entry.querySelector('.custom-field-label').value.trim(),
+                        value: entry.querySelector('.custom-field-value').value.trim(),
+                    })).filter(f => f.label && f.value)
+                };
+
+                if (currentEditId !== null) {
+                    const index = records.findIndex(r => r.id === currentEditId);
+                    records[index] = { ...records[index], ...recordData };
+                    await db.put('records', records[index]);
+                    showToast('Record updated successfully!');
+                } else {
+                    recordData.id = generateSequentialId();
+                    records.push(recordData);
+                    await db.put('records', recordData);
+                    await db.put('settings', { key: 'lastId', value: lastId });
+                    showToast('Record saved successfully!');
+                }
+                renderRecords();
+                updateStats();
+                closeModal();
+            };
+
+            const deleteRecord = (id) => {
+                const customConfirm = document.createElement('div');
+                customConfirm.innerHTML = `
+                <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-sm w-full text-center">
+                        <h3 class="text-lg font-bold">Are you sure?</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">This action cannot be undone. You will permanently delete this record.</p>
+                        <div class="mt-6 flex justify-center gap-4">
+                            <button id="confirm-cancel" class="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-600 text-sm font-medium">Cancel</button>
+                            <button id="confirm-delete" class="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-medium">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                `;
+                document.body.appendChild(customConfirm);
+
+                document.getElementById('confirm-delete').onclick = async () => {
+                    records = records.filter(r => r.id !== id);
+                    await db.delete('records', id);
+                    renderRecords();
+                    updateStats();
+                    showToast('Record deleted.');
+                    customConfirm.remove();
+                };
+                document.getElementById('confirm-cancel').onclick = () => {
+                     customConfirm.remove();
+                };
+            };
+            
+            const generatePDF = (id) => {
+                const record = records.find(r => r.id === id);
+                if (!record) return;
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                doc.setFontSize(20);
+                doc.setFont('helvetica', 'bold');
+                doc.text(appTitle, 14, 22);
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Record ID: ${record.id}`, 14, 32);
+                doc.text(`Date: ${new Date(record.recordDate).toLocaleDateString()}`, 14, 38);
+
+                const tableData = [
+                    ['Vehicle Number', record.vehicleNumber],
+                    ['Owner Name', record.ownerName],
+                    ['From', record.fromLocation],
+                    ['To', record.toLocation],
+                    ['Quantity', record.quantity],
+                    ...record.customFields.map(f => [f.label, f.value]),
+                ];
+
+                doc.autoTable({ startY: 45, head: [['Field', 'Value']], body: tableData });
+                
+                const finalY = doc.autoTable.previous.finalY;
+
+                const paymentData = record.payments.map(p => [new Date(p.date).toLocaleDateString(), `₹ ${p.amount.toLocaleString()}`]);
+                const totalPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
+                const balance = record.amount - totalPaid;
+                
+                doc.autoTable({ startY: finalY + 10, head: [['Payment Date', 'Amount']], body: paymentData });
+                
+                const paymentFinalY = doc.autoTable.previous.finalY;
+                doc.autoTable({
+                    startY: paymentFinalY + 2,
+                    body: [
+                        [{ content: 'Total Amount', styles: { fontStyle: 'bold' } }, `₹ ${record.amount.toLocaleString()}`],
+                        [{ content: 'Total Paid', styles: { fontStyle: 'bold' } }, `₹ ${totalPaid.toLocaleString()}`],
+                        [{ content: 'Balance Due', styles: { fontStyle: 'bold', textColor: [200, 0, 0] } }, `₹ ${balance.toLocaleString()}`]
+                    ],
+                    theme: 'plain'
+                });
+
+
+                doc.save(`record-${record.vehicleNumber}-${record.id}.pdf`);
+            };
+
+            const renderRecords = (filter = '') => {
+                const searchTerm = filter.toLowerCase();
+                const filteredRecords = records.filter(r => 
+                    r.vehicleNumber.toLowerCase().includes(searchTerm) ||
+                    r.ownerName.toLowerCase().includes(searchTerm) ||
+                    r.fromLocation.toLowerCase().includes(searchTerm) ||
+                    r.toLocation.toLowerCase().includes(searchTerm)
+                ).sort((a, b) => b.id - a.id);
+
+                if (filteredRecords.length === 0) {
+                    noRecordsMessage.style.display = 'block';
+                    noRecordsMessage.querySelector('.font-semibold').textContent = records.length > 0 ? 'No records match your search.' : 'No records found.';
+                    noRecordsMessage.querySelector('p:last-child').style.display = records.length > 0 ? 'none' : 'block';
+                } else {
+                    noRecordsMessage.style.display = 'none';
+                }
+                
+                if(currentView === 'card') {
+                    renderCardView(filteredRecords);
+                } else {
+                    renderTableView(filteredRecords);
+                }
+            };
+            
+            const createActionButtons = (record) => {
+                const container = document.createElement('div');
+                container.className = "flex justify-end items-center space-x-1";
+                container.innerHTML = `
+                    <button class="pdf-btn p-2 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors" title="Download PDF"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd" /></svg></button>
+                    <button class="edit-btn p-2 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors" title="Edit Record"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg></button>
+                    <button class="delete-btn p-2 rounded-full text-gray-400 hover:bg-red-500 hover:text-white transition-colors" title="Delete Record"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>
+                `;
+                container.querySelector('.edit-btn').addEventListener('click', () => openRecordModal(record.id));
+                container.querySelector('.delete-btn').addEventListener('click', () => deleteRecord(record.id));
+                container.querySelector('.pdf-btn').addEventListener('click', () => generatePDF(record.id));
+                return container;
+            }
+
+            const renderCardView = (recordsToRender) => {
+                recordsContainer.innerHTML = '';
+                recordsToRender.forEach(record => {
+                    const totalPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
+                    const balance = record.amount - totalPaid;
+                    const card = document.createElement('div');
+                    card.className = "bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 hover:border-indigo-500 dark:hover:border-indigo-500 transition-all duration-300 transform hover:-translate-y-1 flex flex-col";
+                    card.innerHTML = `
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">${record.vehicleNumber}</h3>
+                                    <p class="text-sm text-gray-400">${new Date(record.recordDate).toLocaleDateString()}</p>
+                                </div>
+                                <span class="text-xs font-mono bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-1 rounded-full">#${String(record.id).padStart(4, '0')}</span>
+                            </div>
+                            <p class="text-gray-500 dark:text-gray-400 mb-4 mt-1">${record.ownerName}</p>
+                            <div class="text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center space-x-2 mb-2">
+                                <span>${record.fromLocation}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                                <span>${record.toLocation}</span>
+                            </div>
+                            <dl class="space-y-2 mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                               <div class="flex justify-between text-sm"><dt class="text-gray-500 dark:text-gray-400">Total Amount:</dt><dd class="text-green-600 dark:text-green-400 font-semibold">₹ ${record.amount.toLocaleString()}</dd></div>
+                               <div class="flex justify-between text-sm"><dt class="text-gray-500 dark:text-gray-400">Total Paid:</dt><dd class="text-gray-700 dark:text-gray-200 font-semibold">₹ ${totalPaid.toLocaleString()}</dd></div>
+                               <div class="flex justify-between text-sm"><dt class="text-gray-500 dark:text-gray-400">Balance:</dt><dd class="${balance > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-200'} font-semibold">₹ ${balance.toLocaleString()}</dd></div>
+                            </dl>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700"></div>
+                    `;
+                    card.lastElementChild.appendChild(createActionButtons(record));
+                    recordsContainer.appendChild(card);
+                });
+            };
+
+            const renderTableView = (recordsToRender) => {
+                tableBody.innerHTML = '';
+                 recordsToRender.forEach(record => {
+                    const totalPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
+                    const balance = record.amount - totalPaid;
+                    const row = document.createElement('tr');
+                    row.className = "bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600";
+                    row.innerHTML = `
+                        <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">#${String(record.id).padStart(4, '0')}</td>
+                        <td class="px-6 py-4">${new Date(record.recordDate).toLocaleDateString()}</td>
+                        <td class="px-6 py-4">${record.vehicleNumber}</td>
+                        <td class="px-6 py-4">${record.ownerName}</td>
+                        <td class="px-6 py-4">₹ ${record.amount.toLocaleString()}</td>
+                        <td class="px-6 py-4 font-semibold ${balance > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}">₹ ${balance.toLocaleString()}</td>
+                        <td class="px-6 py-4 text-right"></td>
+                    `;
+                    row.lastElementChild.appendChild(createActionButtons(record));
+                    tableBody.appendChild(row);
+                });
+            };
+            
+            const switchView = (view, savePreference = true) => {
+                currentView = view;
+                if(view === 'card') {
+                    recordsContainer.style.display = 'grid';
+                    tableViewContainer.style.display = 'none';
+                    cardViewBtn.classList.add('active');
+                    tableViewBtn.classList.remove('active');
+                } else {
+                    recordsContainer.style.display = 'none';
+                    tableViewContainer.style.display = 'block';
+                    cardViewBtn.classList.remove('active');
+                    tableViewBtn.classList.add('active');
+                }
+                if (savePreference) {
+                    db.put('settings', { key: 'currentView', value: view });
+                }
+                renderRecords(searchInput.value);
+            };
+            
+            const updateStats = () => {
+                const totalRecords = records.length;
+                
+                const now = new Date();
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                const thisMonthRecords = records.filter(r => new Date(r.recordDate) >= startOfMonth).length;
+                
+                const totalRevenue = records.reduce((sum, r) => sum + r.amount, 0);
+                
+                const pendingBalance = records.reduce((sum, r) => {
+                    const totalPaid = r.payments.reduce((pSum, p) => pSum + p.amount, 0);
+                    return sum + (r.amount - totalPaid);
+                }, 0);
+                
+                document.getElementById('stat-total-records').textContent = totalRecords;
+                document.getElementById('stat-this-month').textContent = thisMonthRecords;
+                document.getElementById('stat-total-revenue').textContent = `₹${totalRevenue.toLocaleString()}`;
+                document.getElementById('stat-pending-balance').textContent = `₹${pendingBalance.toLocaleString()}`;
+            };
+            
+            const exportToXLSX = () => {
+                const dataToExport = records.map(r => {
+                    const totalPaid = r.payments.reduce((sum, p) => sum + p.amount, 0);
+                    const balance = r.amount - totalPaid;
+                    const customFields = (r.customFields || []).reduce((obj, item) => {
+                        obj[item.label] = item.value;
+                        return obj;
+                    }, {});
+                    return {
+                        ID: r.id,
+                        Date: r.recordDate,
+                        Vehicle_Number: r.vehicleNumber,
+                        Owner_Name: r.ownerName,
+                        From: r.fromLocation,
+                        To: r.toLocation,
+                        Quantity: r.quantity,
+                        Total_Amount: r.amount,
+                        Total_Paid: totalPaid,
+                        Balance: balance,
+                        ...customFields,
+                        Payments: JSON.stringify(r.payments)
+                    }
+                });
+                const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Records");
+                XLSX.writeFile(workbook, `${appTitle.replace(/\s/g, '_')}_Export.xlsx`);
+                showToast("Exported to XLSX!");
+            };
+
+            const applyTheme = (theme) => {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    document.getElementById('theme-icon-light').classList.remove('hidden');
+                    document.getElementById('theme-icon-dark').classList.add('hidden');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.getElementById('theme-icon-light').classList.add('hidden');
+                    document.getElementById('theme-icon-dark').classList.remove('hidden');
+                }
+            };
+            
+            // --- Event Listeners ---
+            addNewRecordBtn.addEventListener('click', () => openRecordModal());
+            closeModalBtns.forEach(btn => btn.addEventListener('click', closeModal));
+            modalBackdrop.addEventListener('click', closeModal);
+            recordForm.addEventListener('submit', handleFormSubmit);
+            recordForm.addEventListener('input', updateBalance);
+            searchInput.addEventListener('input', (e) => renderRecords(e.target.value));
+            addPaymentBtn.addEventListener('click', () => addPaymentField());
+            amountInput.addEventListener('input', updateBalance);
+            exportBtn.addEventListener('click', exportToXLSX);
+            
+            settingsBtn.addEventListener('click', () => {
+                appTitleInput.value = appTitle;
+                openModal(settingsModal);
+            });
+
+            settingsForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                appTitle = appTitleInput.value;
+                appTitleElement.textContent = appTitle;
+                document.title = appTitle;
+                await db.put('settings', { key: 'appTitle', value: appTitle });
+                closeModal();
+                showToast('Settings saved!');
+            });
+            
+            addCustomFieldBtn.addEventListener('click', () => addCustomField());
+            cardViewBtn.addEventListener('click', () => switchView('card'));
+            tableViewBtn.addEventListener('click', () => switchView('table'));
+            
+            themeToggle.addEventListener('click', async () => {
+                const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+                await db.put('settings', { key: 'theme', value: newTheme });
+                applyTheme(newTheme);
+            });
+
+            // --- Initial Load ---
+            loadData();
+        });
+    </script>
+</body>
+</html>
+
+
+
