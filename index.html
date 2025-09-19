@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vehicle Record Management</title>
+    <title>Record Management System</title>
+    <!-- Add your favicon link here -->
+    <link rel="icon" href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhWoz1aCQ1zXeaBfa8OTEPW0zXn-xOVav8qm7w56pwxjVT2-QU-TRYSRAQctTBbPbMWfaxtQO2eFHPH9zBMfvJfa2AkmAdlV38DNCPNaWwoT_GwodcLKQ0bY2m0L8eYTVmYqDW_H7vdxcJ4KQ0ma_shNnpZIWpTr-6I5fpo_CQL1fyPZkPKNMhUnWouNPf2/s320/firststep.webp" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
@@ -15,7 +17,7 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
-        .modal-backdrop {
+        .modal-backdrop, .loader-backdrop {
             display: none;
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background-color: rgba(0,0,0,0.7);
@@ -39,99 +41,151 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideIn { from { transform: translate(-50%, -40%); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
         
-        /* Modern Scrollbar for the entire page */
-        html::-webkit-scrollbar {
-            width: 12px;
+        /* Loader */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4f46e5;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
         }
-        html::-webkit-scrollbar-track {
-            background: #f8fafc; /* Tailwind slate-50 */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Moving Icon Animation */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
         }
-        html::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1; /* Tailwind slate-300 */
-            border-radius: 20px;
-            border: 3px solid #f8fafc; /* Tailwind slate-50 */
-        }
-         html::-webkit-scrollbar-thumb:hover {
-            background-color: #94a3b8; /* Tailwind slate-400 */
+        .floating-icon {
+            animation: float 3s ease-in-out infinite;
         }
 
-        html.dark::-webkit-scrollbar-track {
-            background: #0f172a; /* Tailwind slate-900 */
-        }
-        html.dark::-webkit-scrollbar-thumb {
-            background-color: #334155; /* Tailwind slate-700 */
-             border-color: #0f172a; /* Tailwind slate-900 */
-        }
-        html.dark::-webkit-scrollbar-thumb:hover {
-            background-color: #475569; /* Tailwind slate-600 */
-        }
+        /* Modern Scrollbar */
+        html::-webkit-scrollbar { width: 12px; }
+        html::-webkit-scrollbar-track { background: #f8fafc; }
+        html::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; border: 3px solid #f8fafc; }
+        html::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+        html.dark::-webkit-scrollbar-track { background: #0f172a; }
+        html.dark::-webkit-scrollbar-thumb { background-color: #334155; border-color: #0f172a; }
+        html.dark::-webkit-scrollbar-thumb:hover { background-color: #475569; }
         
         .view-toggle button.active { background-color: #4338ca; color: white; }
         
-        .stat-card {
-            transition: all 0.3s ease;
-            transform-style: preserve-3d;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
+        .stat-card { transition: all 0.3s ease; transform-style: preserve-3d; }
+        .stat-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
 
-        /* Custom scrollbar for form modal */
-        .form-scroll-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        .form-scroll-container::-webkit-scrollbar-track {
-            background-color: transparent;
-        }
-        .form-scroll-container::-webkit-scrollbar-thumb {
-            background-color: #d1d5db; /* light mode */
-            border-radius: 4px;
-            border: 2px solid transparent;
-            background-clip: content-box;
-        }
-        .form-scroll-container::-webkit-scrollbar-thumb:hover {
-            background-color: #9ca3af;
-        }
+        .form-scroll-container::-webkit-scrollbar { width: 8px; }
+        .form-scroll-container::-webkit-scrollbar-track { background-color: transparent; }
+        .form-scroll-container::-webkit-scrollbar-thumb { background-color: #d1d5db; border-radius: 4px; border: 2px solid transparent; background-clip: content-box; }
+        .form-scroll-container::-webkit-scrollbar-thumb:hover { background-color: #9ca3af; }
+        html.dark .form-scroll-container::-webkit-scrollbar-thumb { background-color: #4b5563; }
+        html.dark .form-scroll-container::-webkit-scrollbar-thumb:hover { background-color: #6b7280; }
 
-        html.dark .form-scroll-container::-webkit-scrollbar-thumb {
-            background-color: #4b5563; /* dark mode */
+        /* Print styles */
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
         }
-        html.dark .form-scroll-container::-webkit-scrollbar-thumb:hover {
-            background-color: #6b7280;
-        }
+        /* Sorting arrows */
+        th[data-sort] { cursor: pointer; }
+        th[data-sort]::after { content: ' '; display: inline-block; width: 1em; height: 1em; margin-left: 0.5em; background-repeat: no-repeat; background-size: contain; }
+        th[data-sort-direction="asc"]::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236b7280'%3E%3Cpath fill-rule='evenodd' d='M10 3a.75.75 0 01.75.75v10.5a.75.75 0 01-1.5 0V3.75A.75.75 0 0110 3zM5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z' clip-rule='evenodd' /%3E%3C/svg%3E"); }
+        th[data-sort-direction="desc"]::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236b7280'%3E%3Cpath fill-rule='evenodd' d='M10 17a.75.75 0 01-.75-.75V5.75a.75.75 0 011.5 0v10.5A.75.75 0 0110 17zM14.78 11.78a.75.75 0 01-1.06 0L10 8.06l-3.72 3.72a.75.75 0 11-1.06-1.06l4.25-4.25a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06z' clip-rule='evenodd' /%3E%3C/svg%3E"); }
+        html.dark th[data-sort-direction="asc"]::after, html.dark th[data-sort-direction="desc"]::after { filter: invert(1); }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-300">
+<body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-300">
 
-    <!-- Main Container -->
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+    <!-- Loader -->
+    <div id="loader-backdrop" class="loader-backdrop fixed inset-0 z-50 flex items-center justify-center">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- Auth Container -->
+    <div id="auth-container" class="min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg text-center">
+            <!-- Logo Placeholder -->
+            <img id="login-logo" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhWoz1aCQ1zXeaBfa8OTEPW0zXn-xOVav8qm7w56pwxjVT2-QU-TRYSRAQctTBbPbMWfaxtQO2eFHPH9zBMfvJfa2AkmAdlV38DNCPNaWwoT_GwodcLKQ0bY2m0L8eYTVmYqDW_H7vdxcJ4KQ0ma_shNnpZIWpTr-6I5fpo_CQL1fyPZkPKNMhUnWouNPf2/s320/firststep.webp" alt="Company Logo" class="mx-auto mb-6 h-12">
+            
+            <div class="flex justify-center items-center gap-3 mb-6">
+                <svg class="h-10 w-10 text-indigo-600 dark:text-indigo-400 floating-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Login</h2>
+            </div>
+
+            <form id="auth-form" class="space-y-4">
+                <div class="relative">
+                    <input type="email" id="auth-email" placeholder="Email" required class="w-full bg-gray-100 dark:bg-gray-700 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 pl-4">
+                </div>
+                <div class="relative">
+                    <input type="password" id="auth-password" placeholder="Password" required class="w-full bg-gray-100 dark:bg-gray-700 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 pl-4">
+                    <button type="button" id="toggle-password-visibility" class="absolute inset-y-0 right-0 px-4 flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                        <svg id="eye-open-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path fill-rule="evenodd" d="M.458 10C3.732 4.943 7.523 3 10 3s6.268 1.943 9.542 7c-3.274 5.057-7.523 7-9.542 7S3.732 15.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                        </svg>
+                        <svg id="eye-closed-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.27 8.138 15.523 5 10 5a9.74 9.74 0 00-4.542 1.075L3.707 2.293zM10 12a2 2 0 110-4 2 2 0 010 4z" clip-rule="evenodd" />
+                            <path d="M2 10s3.732-5.057 7.542-7a9.74 9.74 0 014.542 1.075l-1.473 1.473A8.014 8.014 0 0010 7a8.014 8.014 0 00-4.242 1.258L2 10z" />
+                        </svg>
+                    </button>
+                </div>
+                <button type="submit" id="login-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">Login</button>
+            </form>
+            <p id="auth-error" class="text-red-500 text-center mt-4 text-sm min-h-[1.25rem]"></p>
+        </div>
+    </div>
+
+    <!-- Main App Container (hidden by default) -->
+    <div id="app-container" class="container mx-auto p-4 sm:p-6 lg:p-8 hidden">
         
         <!-- Header -->
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-            <div>
-                <h1 id="app-title" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Vehicle Records</h1>
-                <p class="text-gray-500 dark:text-gray-400 mt-1">A modern system to manage your vehicle transit data.</p>
+            <div class="flex items-center gap-4">
+                <img id="header-logo" src="" alt="Logo" class="h-12 w-12 rounded-md object-contain hidden">
+                <div>
+                    <h1 id="app-title" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Records Management</h1>
+                    <p class="text-gray-500 dark:text-gray-400 mt-1">A modern system to manage your vehicle transit data.</p>
+                </div>
             </div>
             <div class="flex items-center justify-start sm:justify-end gap-2 md:gap-3 w-full sm:w-auto flex-wrap">
                  <button id="theme-toggle" class="p-2.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900">
                      <svg id="theme-icon-light" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                     <svg id="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                     <svg id="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
                  </button>
+                 <div id="user-info" class="flex items-center gap-2">
+                     <p id="user-email" class="text-sm font-medium text-gray-600 dark:text-gray-300 hidden sm:block"></p>
+                     <button id="logout-btn" class="p-2.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700" title="Logout">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                     </button>
+                 </div>
                  <button id="settings-btn" class="p-2.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900">
                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                  </button>
-                <button id="export-btn" class="bg-white dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 text-gray-700 dark:text-gray-200 font-bold py-2.5 px-4 rounded-lg shadow-sm transition-colors duration-300 flex items-center justify-center space-x-2">
-                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                     <span class="hidden sm:inline">Export</span>
-                 </button>
+                 <div class="relative inline-block">
+                    <button id="export-btn-group" class="bg-white dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 text-gray-700 dark:text-gray-200 font-bold py-2.5 px-4 rounded-lg shadow-sm transition-colors duration-300 flex items-center justify-center space-x-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                        <span class="hidden sm:inline">Export</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+                    </button>
+                    <div id="export-options" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-20">
+                        <a href="#" id="export-all-xls" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">Export All (XLS)</a>
+                        <a href="#" id="export-monthly-xls" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">This Month's Report</a>
+                        <a href="#" id="export-custom-xls" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">Custom Range Report</a>
+                    </div>
+                 </div>
                 <button id="add-new-record-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300 flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900">
                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                      <span class="hidden sm:inline">New Record</span>
                  </button>
             </div>
         </header>
-
+        
+        <!-- App content follows -->
         <!-- Stats Section -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="stat-card bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 flex items-center justify-between">
@@ -181,13 +235,18 @@
                         <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </div>
                 </div>
-                 <div class="flex-shrink-0 view-toggle bg-gray-200 dark:bg-gray-700 rounded-lg p-1 flex items-center">
-                    <button id="card-view-btn" class="p-2 rounded-md" title="Card View">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                <div class="flex items-center gap-4">
+                    <button id="filter-btn" class="p-3 bg-gray-200 dark:bg-gray-700 rounded-lg" title="Advanced Filters">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.59L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd" /></svg>
                     </button>
-                    <button id="table-view-btn" class="p-2 rounded-md" title="Table View">
-                       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
-                    </button>
+                     <div class="flex-shrink-0 view-toggle bg-gray-200 dark:bg-gray-700 rounded-lg p-1 flex items-center">
+                        <button id="card-view-btn" class="p-2 rounded-md" title="Card View">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                        </button>
+                        <button id="table-view-btn" class="p-2 rounded-md" title="Table View">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -202,12 +261,12 @@
             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
-                        <th scope="col" class="px-6 py-3">ID</th>
-                        <th scope="col" class="px-6 py-3">Date</th>
-                        <th scope="col" class="px-6 py-3">Vehicle No.</th>
-                        <th scope="col" class="px-6 py-3">Owner</th>
-                        <th scope="col" class="px-6 py-3">Amount</th>
-                        <th scope="col" class="px-6 py-3">Balance</th>
+                        <th scope="col" class="px-6 py-3" data-sort="id">ID</th>
+                        <th scope="col" class="px-6 py-3" data-sort="recordDate">Date</th>
+                        <th scope="col" class="px-6 py-3" data-sort="vehicleNumber">Vehicle No.</th>
+                        <th scope="col" class="px-6 py-3" data-sort="ownerName">Owner</th>
+                        <th scope="col" class="px-6 py-3" data-sort="amount">Amount</th>
+                        <th scope="col" class="px-6 py-3" data-sort="balance">Balance</th>
                         <th scope="col" class="px-6 py-3 text-right">Actions</th>
                     </tr>
                 </thead>
@@ -215,6 +274,11 @@
                     <!-- Table rows will be inserted here -->
                 </tbody>
             </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div id="pagination-controls" class="mt-8 flex justify-between items-center">
+            <!-- Pagination will be rendered here -->
         </div>
 
         <div id="no-records-message" class="text-center py-16 text-gray-500" style="display: none;">
@@ -227,7 +291,8 @@
     <!-- Modal Backdrop -->
     <div id="modal-backdrop" class="modal-backdrop"></div>
 
-    <!-- Record Form Modal -->
+    <!-- Modals (Record Form, Settings, etc.) -->
+    <!-- The HTML for modals remains the same -->
     <form id="record-form" class="modal w-11/12 md:max-w-3xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 hidden flex-col overflow-hidden">
         <!-- Modal Header -->
         <div class="p-6 sm:p-8 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
@@ -252,15 +317,18 @@
                 </div>
                 <div>
                     <label for="ownerName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Owner Name</label>
-                    <input type="text" id="ownerName" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+                    <input type="text" id="ownerName" list="ownerName-suggestions" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+                    <datalist id="ownerName-suggestions"></datalist>
                 </div>
                  <div>
                     <label for="fromLocation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From</label>
-                    <input type="text" id="fromLocation" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+                    <input type="text" id="fromLocation" list="fromLocation-suggestions" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+                    <datalist id="fromLocation-suggestions"></datalist>
                 </div>
                 <div>
                     <label for="toLocation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To</label>
-                    <input type="text" id="toLocation" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+                    <input type="text" id="toLocation" list="toLocation-suggestions" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
+                    <datalist id="toLocation-suggestions"></datalist>
                 </div>
                 <div>
                     <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity</label>
@@ -306,8 +374,56 @@
              <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-8 rounded-lg shadow-lg transition-colors">Save</button>
         </div>
     </form>
+    
+    <div id="filter-modal" class="modal w-11/12 md:max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl">
+        <form id="filter-form" class="p-8 space-y-6">
+             <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Filter Records</h2>
+                <button type="button" class="close-modal-btn p-1 rounded-full text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Range</label>
+                <div class="flex items-center space-x-2">
+                    <input type="date" id="filter-start-date" class="w-full bg-gray-50 dark:bg-gray-700 rounded-lg p-2.5">
+                    <span>to</span>
+                    <input type="date" id="filter-end-date" class="w-full bg-gray-50 dark:bg-gray-700 rounded-lg p-2.5">
+                </div>
+            </div>
+            <div class="flex items-center">
+                <input type="checkbox" id="filter-pending-balance" class="h-4 w-4 text-indigo-600 rounded focus:ring-indigo-500">
+                <label for="filter-pending-balance" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">Only show records with pending balance</label>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button type="reset" class="bg-gray-200 dark:bg-gray-600 px-4 py-2 rounded-lg">Reset Filters</button>
+                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Apply</button>
+            </div>
+        </form>
+    </div>
+    
+     <div id="custom-report-modal" class="modal w-11/12 md:max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl">
+        <form id="custom-report-form" class="p-8 space-y-6">
+             <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Custom Report</h2>
+                <button type="button" class="close-modal-btn p-1 rounded-full text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Date Range</label>
+                <div class="flex items-center space-x-2">
+                    <input type="date" id="report-start-date" required class="w-full bg-gray-50 dark:bg-gray-700 rounded-lg p-2.5">
+                    <span>to</span>
+                    <input type="date" id="report-end-date" required class="w-full bg-gray-50 dark:bg-gray-700 rounded-lg p-2.5">
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg">Generate & Download</button>
+            </div>
+        </form>
+    </div>
 
-    <!-- Settings Modal -->
     <div id="settings-modal" class="modal w-11/12 md:max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700">
         <form id="settings-form" class="p-8 space-y-6">
              <div class="flex justify-between items-center">
@@ -320,8 +436,21 @@
                 <label for="appTitleInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Application Title</label>
                 <input type="text" id="appTitleInput" required class="w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500">
             </div>
+             <div>
+                <label for="logoUpload" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company Logo</label>
+                <div class="mt-1 flex items-center space-x-4">
+                    <img id="logo-preview" src="https://placehold.co/100x100/e2e8f0/e2e8f0?text=+" alt="Logo preview" class="h-16 w-16 rounded-md object-contain bg-gray-100 dark:bg-gray-700">
+                    <input type="file" id="logoUpload" accept="image/jpeg, image/png, image/webp" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
+                </div>
+            </div>
             <div class="flex justify-end">
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-8 rounded-lg shadow-lg transition-colors">Save Settings</button>
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-8 rounded-lg shadow-lg transition-colors flex items-center justify-center">
+                    <svg id="settings-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span id="settings-save-text">Save Settings</span>
+                </button>
             </div>
         </form>
     </div>
@@ -336,291 +465,328 @@
         <p class="text-sm text-gray-500 dark:text-gray-400">Powered by First Step Digital Agency</p>
     </footer>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+        import { getFirestore, doc, collection, addDoc, getDoc, setDoc, onSnapshot, query, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js";
 
-            // --- IndexedDB Wrapper ---
-            const db = {
-                name: 'VehicleRecordsDB',
-                version: 1,
-                instance: null,
+        // --- PASTE YOUR FIREBASE CONFIGURATION OBJECT HERE ---
+        const firebaseConfig = {
+          apiKey: "AIzaSyBRSLjdYGKefQ1U5VEfeWflbUzc7UPv6o4",
+          authDomain: "records-management-app-a7f0b.firebaseapp.com",
+          projectId: "records-management-app-a7f0b",
+          storageBucket: "records-management-app-a7f0b.appspot.com",
+          messagingSenderId: "316852447802",
+          appId: "1:316852447802:web:a4d901333861872ab92303",
+          measurementId: "G-260KF8MT0B"
+        };
+        // ----------------------------------------------------
 
-                open() {
-                    return new Promise((resolve, reject) => {
-                        if (this.instance) {
-                            resolve(this.instance);
-                            return;
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // --- Utils ---
+        const resizeImage = (file, maxWidth, maxHeight, quality) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let { width, height } = img;
+
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height *= maxWidth / width;
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (height > maxHeight) {
+                                width *= maxHeight / height;
+                                height = maxHeight;
+                            }
                         }
-                        const request = indexedDB.open(this.name, this.version);
 
-                        request.onupgradeneeded = (event) => {
-                            const db = event.target.result;
-                            if (!db.objectStoreNames.contains('records')) {
-                                const recordsStore = db.createObjectStore('records', { keyPath: 'id' });
-                                recordsStore.createIndex('vehicleNumber', 'vehicleNumber', { unique: false });
-                                recordsStore.createIndex('ownerName', 'ownerName', { unique: false });
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                resolve(blob);
+                            } else {
+                                reject(new Error('Canvas to Blob conversion failed'));
                             }
-                            if (!db.objectStoreNames.contains('settings')) {
-                                db.createObjectStore('settings', { keyPath: 'key' });
-                            }
-                        };
-
-                        request.onsuccess = (event) => {
-                            this.instance = event.target.result;
-                            resolve(this.instance);
-                        };
-
-                        request.onerror = (event) => {
-                            console.error('Database error:', event.target.errorCode);
-                            reject(event.target.errorCode);
-                        };
-                    });
-                },
-
-                async getStore(storeName, mode) {
-                    if (!this.instance) await this.open();
-                    return this.instance.transaction(storeName, mode).objectStore(storeName);
-                },
-
-                async put(storeName, item) {
-                    const store = await this.getStore(storeName, 'readwrite');
-                    return new Promise((resolve, reject) => {
-                        const request = store.put(item);
-                        request.onsuccess = resolve;
-                        request.onerror = reject;
-                    });
-                },
-
-                async delete(storeName, key) {
-                    const store = await this.getStore(storeName, 'readwrite');
-                     return new Promise((resolve, reject) => {
-                        const request = store.delete(key);
-                        request.onsuccess = resolve;
-                        request.onerror = reject;
-                    });
-                },
-
-                async getAll(storeName) {
-                    const store = await this.getStore(storeName, 'readonly');
-                    return new Promise((resolve) => {
-                        const request = store.getAll();
-                        request.onsuccess = () => resolve(request.result);
-                    });
-                }
-            };
-
-            // --- DOM Elements ---
-            const appTitleElement = document.getElementById('app-title');
-            const addNewRecordBtn = document.getElementById('add-new-record-btn');
-            const modalBackdrop = document.getElementById('modal-backdrop');
-            const recordForm = document.getElementById('record-form');
-            const modalTitle = document.getElementById('modal-title');
-            const settingsBtn = document.getElementById('settings-btn');
-            const settingsModal = document.getElementById('settings-modal');
-            const settingsForm = document.getElementById('settings-form');
-            const appTitleInput = document.getElementById('appTitleInput');
-            const closeModalBtns = document.querySelectorAll('.close-modal-btn');
-            const recordsContainer = document.getElementById('records-container');
-            const tableViewContainer = document.getElementById('table-view-container');
-            const tableBody = document.getElementById('table-body');
-            const noRecordsMessage = document.getElementById('no-records-message');
-            const searchInput = document.getElementById('search-input');
-            const themeToggle = document.getElementById('theme-toggle');
-            const cardViewBtn = document.getElementById('card-view-btn');
-            const tableViewBtn = document.getElementById('table-view-btn');
-            const amountInput = document.getElementById('amount');
-            const balanceInput = document.getElementById('balance');
-            const addCustomFieldBtn = document.getElementById('add-custom-field-btn');
-            const customFieldsContainer = document.getElementById('custom-fields-container');
-            const paymentsContainer = document.getElementById('payments-container');
-            const addPaymentBtn = document.getElementById('add-payment-btn');
-            const exportBtn = document.getElementById('export-btn');
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toast-message');
-
-            // --- State ---
-            let records = [];
-            let currentEditId = null;
-            let currentView = 'card';
-            let appTitle = 'Vehicle Records';
-            let lastId = 0;
-
-            // --- Utils ---
-            const debounce = (func, delay) => {
-                let timeoutId;
-                return (...args) => {
-                    clearTimeout(timeoutId);
-                    timeoutId = setTimeout(() => {
-                        func.apply(this, args);
-                    }, delay);
+                        }, 'image/webp', quality);
+                    };
+                    img.onerror = (error) => reject(error);
                 };
-            };
-            
-            // --- Main Functions ---
-            const updateBalance = () => {
-                const totalAmount = parseFloat(amountInput.value) || 0;
-                let totalPaid = 0;
-                document.querySelectorAll('.payment-entry-amount').forEach(input => {
-                    totalPaid += parseFloat(input.value) || 0;
-                });
-                balanceInput.value = (totalAmount - totalPaid).toFixed(2);
-            };
-            
-            const showToast = (message) => {
-                toastMessage.textContent = message;
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 3000);
-            };
+                reader.onerror = (error) => reject(error);
+            });
+        };
 
-            const openModal = (modalElement) => {
-                modalElement.style.display = 'flex'; // Use flex to enable scrolling layout
-                modalBackdrop.style.display = 'block';
-                document.body.style.overflow = 'hidden';
-            };
-            
-            const closeModal = () => {
-                document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-                modalBackdrop.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            };
+        // --- DOM Elements ---
+        const loader = document.getElementById('loader-backdrop');
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
+        const authForm = document.getElementById('auth-form');
+        const authEmailInput = document.getElementById('auth-email');
+        const authPasswordInput = document.getElementById('auth-password');
+        const togglePasswordVisibilityBtn = document.getElementById('toggle-password-visibility');
+        const eyeOpenIcon = document.getElementById('eye-open-icon');
+        const eyeClosedIcon = document.getElementById('eye-closed-icon');
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const authError = document.getElementById('auth-error');
+        const userEmailElement = document.getElementById('user-email');
 
-            const addPaymentField = (payment = { amount: '', date: new Date().toISOString().split('T')[0] }) => {
-                const paymentId = `payment-${Date.now()}`;
-                const paymentHTML = `
-                    <div id="${paymentId}" class="flex items-center space-x-2 payment-entry">
-                        <input type="number" value="${payment.amount}" placeholder="Amount" class="flex-1 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 payment-entry-amount">
-                        <input type="date" value="${payment.date}" class="w-auto bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 payment-entry-date">
-                        <button type="button" class="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full" onclick="document.getElementById('${paymentId}').remove(); this.closest('form').dispatchEvent(new Event('input', {bubbles:true}))">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                        </button>
-                    </div>
-                `;
-                paymentsContainer.insertAdjacentHTML('beforeend', paymentHTML);
-            };
-            
-            const openRecordModal = (recordId = null) => {
-                recordForm.reset();
-                customFieldsContainer.innerHTML = '';
-                paymentsContainer.innerHTML = '';
-                
-                if (recordId !== null) {
-                    currentEditId = recordId;
-                    modalTitle.textContent = 'Edit Record';
-                    const record = records.find(r => r.id === recordId);
-                    if (record) {
-                        document.getElementById('recordDate').value = record.recordDate;
-                        document.getElementById('vehicleNumber').value = record.vehicleNumber;
-                        document.getElementById('ownerName').value = record.ownerName;
-                        document.getElementById('fromLocation').value = record.fromLocation;
-                        document.getElementById('toLocation').value = record.toLocation;
-                        document.getElementById('quantity').value = record.quantity;
-                        document.getElementById('amount').value = record.amount;
-                        record.payments.forEach(p => addPaymentField(p));
-                        (record.customFields || []).forEach(field => addCustomField(field.label, field.value));
-                        updateBalance();
-                    }
-                } else {
-                    currentEditId = null;
-                    modalTitle.textContent = 'Add New Record';
-                    document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
-                    addPaymentField(); // Add one payment field by default
-                    updateBalance();
-                }
-                openModal(recordForm);
-            };
+        // Other DOM elements remain the same as before...
+        const appTitleElement = document.getElementById('app-title');
+        const headerLogo = document.getElementById('header-logo');
+        const addNewRecordBtn = document.getElementById('add-new-record-btn');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const recordForm = document.getElementById('record-form');
+        const modalTitle = document.getElementById('modal-title');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsModal = document.getElementById('settings-modal');
+        const settingsForm = document.getElementById('settings-form');
+        const appTitleInput = document.getElementById('appTitleInput');
+        const logoUpload = document.getElementById('logoUpload');
+        const logoPreview = document.getElementById('logo-preview');
+        const closeModalBtns = document.querySelectorAll('.close-modal-btn');
+        const recordsContainer = document.getElementById('records-container');
+        const tableViewContainer = document.getElementById('table-view-container');
+        const tableBody = document.getElementById('table-body');
+        const tableHead = document.querySelector('#table-view-container thead');
+        const noRecordsMessage = document.getElementById('no-records-message');
+        const searchInput = document.getElementById('search-input');
+        const themeToggle = document.getElementById('theme-toggle');
+        const cardViewBtn = document.getElementById('card-view-btn');
+        const tableViewBtn = document.getElementById('table-view-btn');
+        const amountInput = document.getElementById('amount');
+        const balanceInput = document.getElementById('balance');
+        const addCustomFieldBtn = document.getElementById('add-custom-field-btn');
+        const customFieldsContainer = document.getElementById('custom-fields-container');
+        const paymentsContainer = document.getElementById('payments-container');
+        const addPaymentBtn = document.getElementById('add-payment-btn');
+        const exportBtnGroup = document.getElementById('export-btn-group');
+        const exportOptions = document.getElementById('export-options');
+        const exportAllXlsBtn = document.getElementById('export-all-xls');
+        const exportMonthlyXlsBtn = document.getElementById('export-monthly-xls');
+        const exportCustomXlsBtn = document.getElementById('export-custom-xls');
+        const customReportModal = document.getElementById('custom-report-modal');
+        const customReportForm = document.getElementById('custom-report-form');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+        const paginationControls = document.getElementById('pagination-controls');
+        const filterBtn = document.getElementById('filter-btn');
+        const filterModal = document.getElementById('filter-modal');
+        const filterForm = document.getElementById('filter-form');
+        
+        // --- State ---
+        let records = [];
+        let currentUser = null;
+        let unsubscribeRecords = null; // To detach the Firestore listener on logout
+        let unsubscribeSettings = null;
+        let currentEditId = null;
+        let currentView = 'card';
+        let appTitle = 'Vehicle Records';
+        let companyLogo = null;
+        let lastRecordNumber = 0; // To keep track of the last used record number
+        // New state variables for the hybrid upload approach
+        let newLogoBlobForUpload = null;
+        let newLogoDataUrlForPreview = null;
+        let isFormDirty = false;
+        let ownerNameSuggestions = new Set();
+        let fromLocationSuggestions = new Set();
+        let toLocationSuggestions = new Set();
+        let currentPage = 1;
+        let recordsPerPage = 15;
+        let sortColumn = 'id';
+        let sortDirection = 'desc';
+        let filters = { startDate: null, endDate: null, pendingOnly: false };
 
-            const addCustomField = (label = '', value = '') => {
-                const fieldId = `custom-${Date.now()}`;
-                const fieldHTML = `
-                    <div id="${fieldId}" class="flex items-center space-x-2 custom-field-entry">
-                        <input type="text" value="${label}" placeholder="Label (e.g., Driver Name)" class="flex-1 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 custom-field-label">
-                        <input type="text" value="${value}" placeholder="Value" class="flex-1 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 custom-field-value">
-                        <button type="button" class="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full" onclick="document.getElementById('${fieldId}').remove()">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                        </button>
-                    </div>
-                `;
-                customFieldsContainer.insertAdjacentHTML('beforeend', fieldHTML);
-            };
-            
-            const generateSequentialId = () => {
-                lastId++;
-                return lastId;
-            };
+        // --- Loader & UI State ---
+        const showLoader = () => loader.style.display = 'flex';
+        const hideLoader = () => loader.style.display = 'none';
 
-            const loadData = async () => {
-                try {
-                    await db.open();
-                    const allSettings = await db.getAll('settings');
-                    const settings = allSettings.reduce((acc, s) => ({ ...acc, [s.key]: s.value }), {});
+        const showApp = () => {
+            authContainer.style.display = 'none';
+            appContainer.style.display = 'block';
+        };
+        const showAuth = () => {
+            authContainer.style.display = 'flex';
+            appContainer.style.display = 'none';
+        };
 
+        // --- Firebase Auth Handlers ---
+        onAuthStateChanged(auth, user => {
+            currentUser = user;
+            if (user) {
+                showApp();
+                userEmailElement.textContent = user.email;
+                loadData();
+            } else {
+                showAuth();
+                records = []; // Clear data on logout
+                renderRecords(); // Clear the UI
+                if (unsubscribeRecords) unsubscribeRecords();
+                if (unsubscribeSettings) unsubscribeSettings();
+            }
+            hideLoader();
+        });
+
+        authForm.addEventListener('submit', async (e) => { // Handles Login
+            e.preventDefault();
+            const email = authEmailInput.value.trim();
+            const password = authPasswordInput.value.trim();
+            authError.textContent = '';
+
+            if (!email || !password) {
+                authError.textContent = 'Please enter both email and password.';
+                return;
+            }
+
+            showLoader();
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                authError.textContent = error.message;
+            } finally {
+                hideLoader();
+            }
+        });
+        
+        togglePasswordVisibilityBtn.addEventListener('click', () => {
+            const isPassword = authPasswordInput.type === 'password';
+            authPasswordInput.type = isPassword ? 'text' : 'password';
+            eyeOpenIcon.classList.toggle('hidden', !isPassword);
+            eyeClosedIcon.classList.toggle('hidden', isPassword);
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // --- Firestore Data Loading ---
+        const loadData = () => {
+            if (!currentUser) return;
+            showLoader();
+
+            // Listen for settings changes
+            const settingsRef = doc(db, 'users', currentUser.uid, 'settings', 'appSettings');
+            unsubscribeSettings = onSnapshot(settingsRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const settings = docSnap.data();
                     appTitle = settings.appTitle || 'Vehicle Records';
-                    lastId = settings.lastId || 0;
+                    companyLogo = settings.companyLogo || null;
+                    lastRecordNumber = settings.lastRecordNumber || 0; // Load the counter
                     const savedView = settings.currentView || 'card';
                     const savedTheme = settings.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
                     appTitleElement.textContent = appTitle;
                     document.title = appTitle;
+                    if(companyLogo) {
+                        headerLogo.src = companyLogo;
+                        headerLogo.classList.remove('hidden');
+                        logoPreview.src = companyLogo;
+                    } else {
+                         headerLogo.classList.add('hidden');
+                         logoPreview.src = 'https://placehold.co/100x100/e2e8f0/e2e8f0?text=+';
+                    }
                     applyTheme(savedTheme);
-
-                    const savedRecords = await db.getAll('records');
-                    records = savedRecords.map(r => {
-                        if (r.advancePaid && !r.payments) {
-                            r.payments = [{ amount: r.advancePaid, date: r.recordDate }];
-                            delete r.advancePaid;
-                        }
-                        if (!r.payments) r.payments = [];
-                        return r;
-                    });
-                    
-                    switchView(savedView, false); // false prevents re-saving
-                    updateStats();
-
-                } catch (error) {
-                     console.error("Failed to load data from IndexedDB", error);
-                    showToast("Error: Could not load data.");
+                    if(currentView !== savedView) {
+                         switchView(savedView, false);
+                    }
                 }
+            }, (error) => {
+                console.error("Error fetching settings:", error);
+            });
+
+            // Listen for records changes
+            const recordsRef = collection(db, 'users', currentUser.uid, 'records');
+            const q = query(recordsRef);
+            unsubscribeRecords = onSnapshot(q, (snapshot) => {
+                records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateAutocompleteSuggestions();
+                updateStats();
+                renderRecords();
+                hideLoader();
+            }, (error) => {
+                console.error("Error fetching records:", error);
+                showToast("Could not load records.");
+                hideLoader();
+            });
+        };
+
+        const handleFormSubmit = async (e) => {
+            e.preventDefault();
+            if (!currentUser) return showToast("You must be logged in.");
+
+            const recordData = {
+                recordDate: document.getElementById('recordDate').value,
+                vehicleNumber: document.getElementById('vehicleNumber').value.toUpperCase(),
+                ownerName: document.getElementById('ownerName').value,
+                fromLocation: document.getElementById('fromLocation').value,
+                toLocation: document.getElementById('toLocation').value,
+                quantity: document.getElementById('quantity').value,
+                amount: parseFloat(document.getElementById('amount').value) || 0,
+                payments: Array.from(document.querySelectorAll('.payment-entry')).map(entry => ({
+                    amount: parseFloat(entry.querySelector('.payment-entry-amount').value) || 0,
+                    date: entry.querySelector('.payment-entry-date').value,
+                })).filter(p => p.amount > 0),
+                customFields: Array.from(document.querySelectorAll('.custom-field-entry')).map(entry => ({
+                    label: entry.querySelector('.custom-field-label').value.trim(),
+                    value: entry.querySelector('.custom-field-value').value.trim(),
+                })).filter(f => f.label && f.value)
             };
-
-            const handleFormSubmit = async (e) => {
-                e.preventDefault();
-                const recordData = {
-                    recordDate: document.getElementById('recordDate').value,
-                    vehicleNumber: document.getElementById('vehicleNumber').value.toUpperCase(),
-                    ownerName: document.getElementById('ownerName').value,
-                    fromLocation: document.getElementById('fromLocation').value,
-                    toLocation: document.getElementById('toLocation').value,
-                    quantity: document.getElementById('quantity').value,
-                    amount: parseFloat(document.getElementById('amount').value) || 0,
-                    payments: Array.from(document.querySelectorAll('.payment-entry')).map(entry => ({
-                        amount: parseFloat(entry.querySelector('.payment-entry-amount').value) || 0,
-                        date: entry.querySelector('.payment-entry-date').value,
-                    })).filter(p => p.amount > 0),
-                    customFields: Array.from(document.querySelectorAll('.custom-field-entry')).map(entry => ({
-                        label: entry.querySelector('.custom-field-label').value.trim(),
-                        value: entry.querySelector('.custom-field-value').value.trim(),
-                    })).filter(f => f.label && f.value)
-                };
-
+            
+            showLoader();
+            try {
                 if (currentEditId !== null) {
-                    const index = records.findIndex(r => r.id === currentEditId);
-                    records[index] = { ...records[index], ...recordData };
-                    await db.put('records', records[index]);
+                    const recordRef = doc(db, 'users', currentUser.uid, 'records', currentEditId);
+                    await setDoc(recordRef, recordData, { merge: true });
                     showToast('Record updated successfully!');
                 } else {
-                    recordData.id = generateSequentialId();
-                    records.push(recordData);
-                    await db.put('records', recordData);
-                    await db.put('settings', { key: 'lastId', value: lastId });
+                    // Use a transaction to safely increment the counter and create the new record
+                    const settingsRef = doc(db, 'users', currentUser.uid, 'settings', 'appSettings');
+                    
+                    await runTransaction(db, async (transaction) => {
+                        const settingsDoc = await transaction.get(settingsRef);
+                        const currentCounter = settingsDoc.data()?.lastRecordNumber || 0;
+                        const newRecordNumber = currentCounter + 1;
+
+                        recordData.recordNumber = newRecordNumber; // Add the new number to the record data
+                        
+                        const newRecordRef = doc(collection(db, 'users', currentUser.uid, 'records'));
+                        transaction.set(newRecordRef, recordData);
+                        transaction.update(settingsRef, { lastRecordNumber: newRecordNumber });
+                    });
+
                     showToast('Record saved successfully!');
                 }
-                renderRecords();
-                updateStats();
+                isFormDirty = false;
                 closeModal();
-            };
+            } catch (error) {
+                console.error("Error saving record:", error);
+                showToast("Error: Could not save record.");
+            } finally {
+                hideLoader();
+            }
+        };
 
-            const deleteRecord = (id) => {
-                const customConfirm = document.createElement('div');
+        const deleteRecord = (id) => {
+            // Confirmation dialog remains the same
+            const customConfirm = document.createElement('div');
                 customConfirm.innerHTML = `
                 <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-sm w-full text-center">
@@ -631,317 +797,448 @@
                             <button id="confirm-delete" class="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-medium">Delete</button>
                         </div>
                     </div>
-                </div>
-                `;
-                document.body.appendChild(customConfirm);
+                </div>`;
+            document.body.appendChild(customConfirm);
 
-                document.getElementById('confirm-delete').onclick = async () => {
-                    records = records.filter(r => r.id !== id);
-                    await db.delete('records', id);
-                    renderRecords();
-                    updateStats();
+            document.getElementById('confirm-delete').onclick = async () => {
+                if (!currentUser) return;
+                showLoader();
+                try {
+                    const recordRef = doc(db, 'users', currentUser.uid, 'records', id);
+                    await deleteDoc(recordRef);
                     showToast('Record deleted.');
+                } catch(error) {
+                    console.error("Error deleting record:", error);
+                    showToast("Error: Could not delete record.");
+                } finally {
                     customConfirm.remove();
-                };
-                document.getElementById('confirm-cancel').onclick = () => {
-                     customConfirm.remove();
-                };
-            };
-            
-            const generatePDF = (id) => {
-                const record = records.find(r => r.id === id);
-                if (!record) return;
-
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                doc.setFontSize(20);
-                doc.setFont('helvetica', 'bold');
-                doc.text(appTitle, 14, 22);
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'normal');
-                doc.text(`Record ID: ${record.id}`, 14, 32);
-                doc.text(`Date: ${new Date(record.recordDate).toLocaleDateString()}`, 14, 38);
-
-                const tableData = [
-                    ['Vehicle Number', record.vehicleNumber],
-                    ['Owner Name', record.ownerName],
-                    ['From', record.fromLocation],
-                    ['To', record.toLocation],
-                    ['Quantity', record.quantity],
-                    ...record.customFields.map(f => [f.label, f.value]),
-                ];
-
-                doc.autoTable({ startY: 45, head: [['Field', 'Value']], body: tableData });
-                
-                const finalY = doc.autoTable.previous.finalY;
-
-                const paymentData = record.payments.map(p => [new Date(p.date).toLocaleDateString(), `₹ ${p.amount.toLocaleString()}`]);
-                const totalPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
-                const balance = record.amount - totalPaid;
-                
-                doc.autoTable({ startY: finalY + 10, head: [['Payment Date', 'Amount']], body: paymentData });
-                
-                const paymentFinalY = doc.autoTable.previous.finalY;
-                doc.autoTable({
-                    startY: paymentFinalY + 2,
-                    body: [
-                        [{ content: 'Total Amount', styles: { fontStyle: 'bold' } }, `₹ ${record.amount.toLocaleString()}`],
-                        [{ content: 'Total Paid', styles: { fontStyle: 'bold' } }, `₹ ${totalPaid.toLocaleString()}`],
-                        [{ content: 'Balance Due', styles: { fontStyle: 'bold', textColor: [200, 0, 0] } }, `₹ ${balance.toLocaleString()}`]
-                    ],
-                    theme: 'plain'
-                });
-
-
-                doc.save(`record-${record.vehicleNumber}-${record.id}.pdf`);
-            };
-
-            const renderRecords = (filter = '') => {
-                const searchTerm = filter.toLowerCase();
-                const filteredRecords = records.filter(r => 
-                    r.vehicleNumber.toLowerCase().includes(searchTerm) ||
-                    r.ownerName.toLowerCase().includes(searchTerm) ||
-                    r.fromLocation.toLowerCase().includes(searchTerm) ||
-                    r.toLocation.toLowerCase().includes(searchTerm)
-                ).sort((a, b) => b.id - a.id);
-
-                if (filteredRecords.length === 0) {
-                    noRecordsMessage.style.display = 'block';
-                    noRecordsMessage.querySelector('.font-semibold').textContent = records.length > 0 ? 'No records match your search.' : 'No records found.';
-                    noRecordsMessage.querySelector('p:last-child').style.display = records.length > 0 ? 'none' : 'block';
-                } else {
-                    noRecordsMessage.style.display = 'none';
-                }
-                
-                if(currentView === 'card') {
-                    renderCardView(filteredRecords);
-                } else {
-                    renderTableView(filteredRecords);
+                    hideLoader();
                 }
             };
+            document.getElementById('confirm-cancel').onclick = () => customConfirm.remove();
+        };
+
+        const saveSettings = async (settingsToSave) => {
+            if (!currentUser || !settingsToSave) return;
+            const settingsRef = doc(db, 'users', currentUser.uid, 'settings', 'appSettings');
+            await setDoc(settingsRef, settingsToSave, { merge: true });
+        };
+
+        logoUpload.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) {
+                newLogoBlobForUpload = null;
+                newLogoDataUrlForPreview = null;
+                logoPreview.src = companyLogo || 'https://placehold.co/100x100/e2e8f0/e2e8f0?text=+';
+                return;
+            }
+            try {
+                const resizedBlob = await resizeImage(file, 300, 300, 0.7);
+                newLogoBlobForUpload = resizedBlob;
+                const reader = new FileReader();
+                reader.readAsDataURL(resizedBlob);
+                reader.onloadend = () => {
+                    newLogoDataUrlForPreview = reader.result;
+                    logoPreview.src = newLogoDataUrlForPreview;
+                };
+            } catch (error) {
+                console.error("Error processing image:", error);
+                showToast("Could not process image.");
+            }
+        });
+
+        settingsForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            const submitBtn = settingsForm.querySelector('button[type="submit"]');
+            const btnSpinner = document.getElementById('settings-spinner');
+            const btnText = document.getElementById('settings-save-text');
+
+            submitBtn.disabled = true;
+            btnSpinner.classList.remove('hidden');
+            btnText.textContent = 'Saving...';
             
-            const createActionButtons = (record) => {
-                const container = document.createElement('div');
-                container.className = "flex justify-end items-center space-x-1";
-                // Note: Removed specific classes like 'edit-btn' and now rely on data-action for event delegation
-                container.innerHTML = `
-                    <button data-action="pdf" data-id="${record.id}" class="p-2 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors" title="Download PDF"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd" /></svg></button>
-                    <button data-action="edit" data-id="${record.id}" class="p-2 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors" title="Edit Record"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg></button>
-                    <button data-action="delete" data-id="${record.id}" class="p-2 rounded-full text-gray-400 hover:bg-red-500 hover:text-white transition-colors" title="Delete Record"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>
-                `;
-                return container;
+            appTitle = appTitleInput.value;
+            let initialSettings = { appTitle };
+            
+            if (newLogoDataUrlForPreview) {
+                companyLogo = newLogoDataUrlForPreview;
+                headerLogo.src = companyLogo;
+                headerLogo.classList.remove('hidden');
+                initialSettings.companyLogo = companyLogo;
             }
 
-            const renderCardView = (recordsToRender) => {
-                recordsContainer.innerHTML = '';
-                const fragment = document.createDocumentFragment();
-                recordsToRender.forEach(record => {
-                    const totalPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
-                    const balance = record.amount - totalPaid;
-                    const card = document.createElement('div');
-                    card.className = "bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 hover:border-indigo-500 dark:hover:border-indigo-500 transition-all duration-300 transform hover:-translate-y-1 flex flex-col";
-                    card.innerHTML = `
-                        <div class="flex-grow">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">${record.vehicleNumber}</h3>
-                                    <p class="text-sm text-gray-400">${new Date(record.recordDate).toLocaleDateString()}</p>
-                                </div>
-                                <span class="text-xs font-mono bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-1 rounded-full">#${String(record.id).padStart(4, '0')}</span>
-                            </div>
-                            <p class="text-gray-500 dark:text-gray-400 mb-4 mt-1">${record.ownerName}</p>
-                            <div class="text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center space-x-2 mb-2">
-                                <span>${record.fromLocation}</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                                <span>${record.toLocation}</span>
-                            </div>
-                            <dl class="space-y-2 mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-                               <div class="flex justify-between text-sm"><dt class="text-gray-500 dark:text-gray-400">Total Amount:</dt><dd class="text-green-600 dark:text-green-400 font-semibold">₹ ${record.amount.toLocaleString()}</dd></div>
-                               <div class="flex justify-between text-sm"><dt class="text-gray-500 dark:text-gray-400">Total Paid:</dt><dd class="text-gray-700 dark:text-gray-200 font-semibold">₹ ${totalPaid.toLocaleString()}</dd></div>
-                               <div class="flex justify-between text-sm"><dt class="text-gray-500 dark:text-gray-400">Balance:</dt><dd class="${balance > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-200'} font-semibold">₹ ${balance.toLocaleString()}</dd></div>
-                            </dl>
-                        </div>
-                        <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700"></div>
-                    `;
-                    card.lastElementChild.appendChild(createActionButtons(record));
-                    fragment.appendChild(card);
-                });
-                recordsContainer.appendChild(fragment);
-            };
-
-            const renderTableView = (recordsToRender) => {
-                tableBody.innerHTML = '';
-                const fragment = document.createDocumentFragment();
-                 recordsToRender.forEach(record => {
-                    const totalPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
-                    const balance = record.amount - totalPaid;
-                    const row = document.createElement('tr');
-                    row.className = "bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600";
-                    row.innerHTML = `
-                        <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">#${String(record.id).padStart(4, '0')}</td>
-                        <td class="px-6 py-4">${new Date(record.recordDate).toLocaleDateString()}</td>
-                        <td class="px-6 py-4">${record.vehicleNumber}</td>
-                        <td class="px-6 py-4">${record.ownerName}</td>
-                        <td class="px-6 py-4">₹ ${record.amount.toLocaleString()}</td>
-                        <td class="px-6 py-4 font-semibold ${balance > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}">₹ ${balance.toLocaleString()}</td>
-                        <td class="px-6 py-4 text-right"></td>
-                    `;
-                    row.lastElementChild.appendChild(createActionButtons(record));
-                    fragment.appendChild(row);
-                });
-                tableBody.appendChild(fragment);
-            };
-            
-            const switchView = (view, savePreference = true) => {
-                currentView = view;
-                if(view === 'card') {
-                    recordsContainer.style.display = 'grid';
-                    tableViewContainer.style.display = 'none';
-                    cardViewBtn.classList.add('active');
-                    tableViewBtn.classList.remove('active');
-                } else {
-                    recordsContainer.style.display = 'none';
-                    tableViewContainer.style.display = 'block';
-                    cardViewBtn.classList.remove('active');
-                    tableViewBtn.classList.add('active');
-                }
-                if (savePreference) {
-                    db.put('settings', { key: 'currentView', value: view });
-                }
-                renderRecords(searchInput.value);
-            };
-            
-            const updateStats = () => {
-                const totalRecords = records.length;
-                
-                const now = new Date();
-                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-                const thisMonthRecords = records.filter(r => new Date(r.recordDate) >= startOfMonth).length;
-                
-                const totalRevenue = records.reduce((sum, r) => sum + r.amount, 0);
-                
-                const pendingBalance = records.reduce((sum, r) => {
-                    const totalPaid = r.payments.reduce((pSum, p) => pSum + p.amount, 0);
-                    return sum + (r.amount - totalPaid);
-                }, 0);
-                
-                document.getElementById('stat-total-records').textContent = totalRecords;
-                document.getElementById('stat-this-month').textContent = thisMonthRecords;
-                document.getElementById('stat-total-revenue').textContent = `₹${totalRevenue.toLocaleString()}`;
-                document.getElementById('stat-pending-balance').textContent = `₹${pendingBalance.toLocaleString()}`;
-            };
-            
-            const exportToXLSX = () => {
-                const dataToExport = records.map(r => {
-                    const totalPaid = r.payments.reduce((sum, p) => sum + p.amount, 0);
-                    const balance = r.amount - totalPaid;
-                    const customFields = (r.customFields || []).reduce((obj, item) => {
-                        obj[item.label] = item.value;
-                        return obj;
-                    }, {});
-                    return {
-                        ID: r.id,
-                        Date: r.recordDate,
-                        Vehicle_Number: r.vehicleNumber,
-                        Owner_Name: r.ownerName,
-                        From: r.fromLocation,
-                        To: r.toLocation,
-                        Quantity: r.quantity,
-                        Total_Amount: r.amount,
-                        Total_Paid: totalPaid,
-                        Balance: balance,
-                        ...customFields,
-                        Payments: JSON.stringify(r.payments)
-                    }
-                });
-                const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-                const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Records");
-                XLSX.writeFile(workbook, `${appTitle.replace(/\s/g, '_')}_Export.xlsx`);
-                showToast("Exported to XLSX!");
-            };
-
-            const applyTheme = (theme) => {
-                if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                    document.getElementById('theme-icon-light').classList.remove('hidden');
-                    document.getElementById('theme-icon-dark').classList.add('hidden');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    document.getElementById('theme-icon-light').classList.add('hidden');
-                    document.getElementById('theme-icon-dark').classList.remove('hidden');
-                }
-            };
-
-            const handleActions = (e) => {
-                const button = e.target.closest('button[data-action]');
-                if (!button) return;
-
-                const action = button.dataset.action;
-                const id = parseInt(button.dataset.id, 10);
-
-                if (isNaN(id)) return;
-
-                switch (action) {
-                    case 'edit':
-                        openRecordModal(id);
-                        break;
-                    case 'delete':
-                        deleteRecord(id);
-                        break;
-                    case 'pdf':
-                        generatePDF(id);
-                        break;
-                }
-            };
-            
-            // --- Event Listeners ---
-            addNewRecordBtn.addEventListener('click', () => openRecordModal());
-            closeModalBtns.forEach(btn => btn.addEventListener('click', closeModal));
-            modalBackdrop.addEventListener('click', closeModal);
-            recordForm.addEventListener('submit', handleFormSubmit);
-            recordForm.addEventListener('input', updateBalance);
-            
-            const debouncedRender = debounce(renderRecords, 300);
-            searchInput.addEventListener('input', (e) => debouncedRender(e.target.value));
-
-            addPaymentBtn.addEventListener('click', () => addPaymentField());
-            amountInput.addEventListener('input', updateBalance);
-            exportBtn.addEventListener('click', exportToXLSX);
-            
-            settingsBtn.addEventListener('click', () => {
-                appTitleInput.value = appTitle;
-                openModal(settingsModal);
-            });
-
-            settingsForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                appTitle = appTitleInput.value;
-                appTitleElement.textContent = appTitle;
-                document.title = appTitle;
-                await db.put('settings', { key: 'appTitle', value: appTitle });
+            // Phase 1: Instant save of fast-changing data (title, local logo)
+            saveSettings(initialSettings).then(() => {
                 closeModal();
                 showToast('Settings saved!');
-            });
-            
-            addCustomFieldBtn.addEventListener('click', () => addCustomField());
-            cardViewBtn.addEventListener('click', () => switchView('card'));
-            tableViewBtn.addEventListener('click', () => switchView('table'));
-            
-            themeToggle.addEventListener('click', async () => {
-                const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-                await db.put('settings', { key: 'theme', value: newTheme });
-                applyTheme(newTheme);
-            });
 
-            // Event Delegation for action buttons
-            recordsContainer.addEventListener('click', handleActions);
-            tableViewContainer.addEventListener('click', handleActions);
+                // Phase 2: Background upload of the new logo, if it exists
+                if (newLogoBlobForUpload) {
+                    const blobToUpload = newLogoBlobForUpload;
+                    newLogoBlobForUpload = null;
+                    newLogoDataUrlForPreview = null;
 
-            // --- Initial Load ---
-            loadData();
+                    const storageRef = ref(storage, `users/${currentUser.uid}/logos/company_logo.webp`);
+                    uploadBytes(storageRef, blobToUpload)
+                        .then(snapshot => getDownloadURL(snapshot.ref))
+                        .then(permanentUrl => {
+                            // Phase 3: Final, silent update with the permanent URL
+                            companyLogo = permanentUrl;
+                            return saveSettings({ companyLogo: permanentUrl });
+                        })
+                        .catch(error => {
+                            console.error("Background logo upload failed:", error);
+                            showToast("Logo failed to sync to the cloud.");
+                        });
+                }
+            }).catch(error => {
+                console.error("Error saving settings:", error);
+                showToast("Error saving settings.");
+            }).finally(() => {
+                submitBtn.disabled = false;
+                btnSpinner.classList.add('hidden');
+                btnText.textContent = 'Save Settings';
+            });
+        });
+
+        const switchView = (view, savePreference = true) => {
+            currentView = view;
+            if(view === 'card') {
+                recordsContainer.style.display = 'grid';
+                tableViewContainer.style.display = 'none';
+                cardViewBtn.classList.add('active');
+                tableViewBtn.classList.remove('active');
+            } else {
+                recordsContainer.style.display = 'none';
+                tableViewContainer.style.display = 'block';
+                cardViewBtn.classList.remove('active');
+                tableViewBtn.classList.add('active');
+            }
+            if (savePreference) {
+                saveSettings({ currentView: view });
+            }
+            currentPage = 1;
+            renderRecords();
+        };
+
+        themeToggle.addEventListener('click', async () => {
+            document.documentElement.classList.toggle('dark');
+            const newTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            applyTheme(newTheme);
+            await saveSettings({ theme: newTheme });
+        });
+
+
+        // --- All other functions (UI, export, PDF, etc.) remain largely the same, ---
+        // --- as they operate on the local 'records' array which is now populated by Firestore. ---
+        
+        // Utils
+        const debounce = (func, delay) => {
+            let timeoutId;
+            return (...args) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    func.apply(this, args);
+                }, delay);
+            };
+        };
+        const showToast = (message) => {
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        };
+        const openModal = (modalElement) => {
+            modalElement.style.display = 'flex'; 
+            modalBackdrop.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        };
+        const closeModal = () => {
+            if (isFormDirty) {
+                const customConfirm = document.createElement('div');
+                customConfirm.innerHTML = `
+                <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-sm w-full text-center">
+                        <h3 class="text-lg font-bold">Unsaved Changes</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">You have unsaved changes. Are you sure you want to close?</p>
+                        <div class="mt-6 flex justify-center gap-4">
+                            <button id="confirm-cancel-close" class="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-600 text-sm font-medium">Stay</button>
+                            <button id="confirm-discard" class="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-medium">Discard</button>
+                        </div>
+                    </div>
+                </div>`;
+                document.body.appendChild(customConfirm);
+
+                document.getElementById('confirm-discard').onclick = () => {
+                    isFormDirty = false;
+                    closeModal();
+                    customConfirm.remove();
+                };
+                document.getElementById('confirm-cancel-close').onclick = () => customConfirm.remove();
+                return;
+            }
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+            modalBackdrop.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            isFormDirty = false;
+        };
+        const updateBalance = () => {
+            const totalAmount = parseFloat(amountInput.value) || 0;
+            let totalPaid = 0;
+            document.querySelectorAll('.payment-entry-amount').forEach(input => {
+                totalPaid += parseFloat(input.value) || 0;
+            });
+            balanceInput.value = (totalAmount - totalPaid).toFixed(2);
+        };
+        const addPaymentField = (payment = { amount: '', date: new Date().toISOString().split('T')[0] }) => {
+            const paymentId = `payment-${Date.now()}`;
+            const paymentHTML = `<div id="${paymentId}" class="flex items-center space-x-2 payment-entry"><input type="number" value="${payment.amount}" placeholder="Amount" class="flex-1 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 payment-entry-amount"><input type="date" value="${payment.date}" class="w-auto bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 payment-entry-date"><button type="button" class="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full" onclick="document.getElementById('${paymentId}').remove(); this.closest('form').dispatchEvent(new Event('input', {bubbles:true}))"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button></div>`;
+            paymentsContainer.insertAdjacentHTML('beforeend', paymentHTML);
+        };
+        const addCustomField = (label = '', value = '') => {
+            const fieldId = `custom-${Date.now()}`;
+            const fieldHTML = `<div id="${fieldId}" class="flex items-center space-x-2 custom-field-entry"><input type="text" value="${label}" placeholder="Label (e.g., Driver Name)" class="flex-1 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 custom-field-label"><input type="text" value="${value}" placeholder="Value" class="flex-1 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 custom-field-value"><button type="button" class="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full" onclick="document.getElementById('${fieldId}').remove()"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button></div>`;
+            customFieldsContainer.insertAdjacentHTML('beforeend', fieldHTML);
+        };
+        const openRecordModal = (recordId = null) => {
+            recordForm.reset();
+            isFormDirty = false;
+            customFieldsContainer.innerHTML = '';
+            paymentsContainer.innerHTML = '';
+            if (recordId) { // Editing
+                currentEditId = recordId;
+                modalTitle.textContent = 'Edit Record';
+                const record = records.find(r => r.id === recordId);
+                if (record) {
+                    document.getElementById('recordDate').value = record.recordDate;
+                    document.getElementById('vehicleNumber').value = record.vehicleNumber;
+                    document.getElementById('ownerName').value = record.ownerName;
+                    document.getElementById('fromLocation').value = record.fromLocation;
+                    document.getElementById('toLocation').value = record.toLocation;
+                    document.getElementById('quantity').value = record.quantity;
+                    document.getElementById('amount').value = record.amount;
+                    record.payments.forEach(p => addPaymentField(p));
+                    (record.customFields || []).forEach(field => addCustomField(field.label, field.value));
+                    updateBalance();
+                }
+            } else { // Adding new
+                currentEditId = null;
+                modalTitle.textContent = 'Add New Record';
+                document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
+                addPaymentField();
+                updateBalance();
+            }
+            openModal(recordForm);
+        };
+        const updateAutocompleteSuggestions = () => {
+            ownerNameSuggestions.clear();
+            fromLocationSuggestions.clear();
+            toLocationSuggestions.clear();
+            records.forEach(r => {
+                ownerNameSuggestions.add(r.ownerName);
+                fromLocationSuggestions.add(r.fromLocation);
+                toLocationSuggestions.add(r.toLocation);
+            });
+            const renderDatalist = (id, suggestions) => {
+                const datalist = document.getElementById(id);
+                datalist.innerHTML = [...suggestions].map(s => `<option value="${s}"></option>`).join('');
+            };
+            renderDatalist('ownerName-suggestions', ownerNameSuggestions);
+            renderDatalist('fromLocation-suggestions', fromLocationSuggestions);
+            renderDatalist('toLocation-suggestions', toLocationSuggestions);
+        };
+        const generatePDF = (id) => {
+            const record = records.find(r => r.id === id);
+            if (!record) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let textStartX = 14;
+            if (companyLogo) {
+                doc.addImage(companyLogo, 'PNG', 14, 15, 20, 20);
+                textStartX = 40;
+            }
+            doc.setFontSize(20); doc.setFont('helvetica', 'bold'); doc.text(appTitle, textStartX, 22);
+            doc.setFontSize(12); doc.setFont('helvetica', 'normal'); doc.text(`Record ID: ${record.id}`, textStartX, 32); doc.text(`Date: ${new Date(record.recordDate).toLocaleDateString()}`, textStartX, 38);
+            const tableData = [['Vehicle Number', record.vehicleNumber], ['Owner Name', record.ownerName], ['From', record.fromLocation], ['To', record.toLocation], ['Quantity', record.quantity], ...record.customFields.map(f => [f.label, f.value])];
+            doc.autoTable({ startY: 45, head: [['Field', 'Value']], body: tableData });
+            const finalY = doc.autoTable.previous.finalY;
+            const paymentData = record.payments.map(p => [new Date(p.date).toLocaleDateString(), `₹ ${p.amount.toLocaleString()}`]);
+            const totalPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
+            const balance = record.amount - totalPaid;
+            doc.autoTable({ startY: finalY + 10, head: [['Payment Date', 'Amount']], body: paymentData });
+            const paymentFinalY = doc.autoTable.previous.finalY;
+            doc.autoTable({ startY: paymentFinalY + 2, body: [[{ content: 'Total Amount', styles: { fontStyle: 'bold' } }, `₹ ${record.amount.toLocaleString()}`], [{ content: 'Total Paid', styles: { fontStyle: 'bold' } }, `₹ ${totalPaid.toLocaleString()}`], [{ content: 'Balance Due', styles: { fontStyle: 'bold', textColor: [200, 0, 0] } }, `₹ ${balance.toLocaleString()}`]], theme: 'plain' });
+            doc.save(`record-${record.vehicleNumber}-${record.id}.pdf`);
+        };
+        const printRecord = (id) => {
+             const record = records.find(r => r.id === id);
+            if (!record) return;
+            const totalPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
+            const balance = record.amount - totalPaid;
+            const printContent = `<div id="print-area" style="font-family: Arial, sans-serif; margin: 2rem;"><div style="display: flex; align-items: center; border-bottom: 2px solid #ccc; padding-bottom: 1rem; margin-bottom: 1rem;">${companyLogo ? `<img src="${companyLogo}" alt="logo" style="height: 60px; width: 60px; margin-right: 1rem;">` : ''}<h1 style="font-size: 2rem; margin: 0;">${appTitle}</h1></div><h2>Record Details (ID: #${record.id})</h2><p><strong>Date:</strong> ${new Date(record.recordDate).toLocaleDateString()}</p><table style="width: 100%; border-collapse: collapse; margin-top: 1rem;"><tr style="background-color: #f2f2f2;"><td style="border: 1px solid #ddd; padding: 8px;">Vehicle Number</td><td style="border: 1px solid #ddd; padding: 8px;">${record.vehicleNumber}</td></tr><tr><td style="border: 1px solid #ddd; padding: 8px;">Owner Name</td><td style="border: 1px solid #ddd; padding: 8px;">${record.ownerName}</td></tr><tr style="background-color: #f2f2f2;"><td style="border: 1px solid #ddd; padding: 8px;">From</td><td style="border: 1px solid #ddd; padding: 8px;">${record.fromLocation}</td></tr><tr><td style="border: 1px solid #ddd; padding: 8px;">To</td><td style="border: 1px solid #ddd; padding: 8px;">${record.toLocation}</td></tr><tr style="background-color: #f2f2f2;"><td style="border: 1px solid #ddd; padding: 8px;">Quantity</td><td style="border: 1px solid #ddd; padding: 8px;">${record.quantity}</td></tr>${(record.customFields || []).map((f, i) => `<tr style="${i % 2 === 0 ? '' : 'background-color: #f2f2f2;'}"><td style="border: 1px solid #ddd; padding: 8px;">${f.label}</td><td style="border: 1px solid #ddd; padding: 8px;">${f.value}</td></tr>`).join('')}</table><h3 style="margin-top: 2rem;">Payment Details</h3><table style="width: 100%; border-collapse: collapse; margin-top: 1rem;"><tr style="background-color: #f2f2f2;"><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Payment Date</th><th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Amount</th></tr>${record.payments.map(p => `<tr><td style="border: 1px solid #ddd; padding: 8px;">${new Date(p.date).toLocaleDateString()}</td><td style="border: 1px solid #ddd; padding: 8px; text-align: right;">₹ ${p.amount.toLocaleString()}</td></tr>`).join('')}</table><table style="width: 50%; border-collapse: collapse; margin-top: 1rem; margin-left: auto;"><tr><td style="padding: 8px;"><strong>Total Amount:</strong></td><td style="padding: 8px; text-align: right;">₹ ${record.amount.toLocaleString()}</td></tr><tr><td style="padding: 8px;"><strong>Total Paid:</strong></td><td style="padding: 8px; text-align: right;">₹ ${totalPaid.toLocaleString()}</td></tr><tr><td style="padding: 8px; font-weight: bold; color: ${balance > 0 ? 'red' : 'black'};"><strong>Balance:</strong></td><td style="padding: 8px; text-align: right; font-weight: bold; color: ${balance > 0 ? 'red' : 'black'};">₹ ${balance.toLocaleString()}</td></tr></table></div>`;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent); printWindow.document.close(); printWindow.print();
+        };
+        const renderRecords = (filterText = searchInput.value) => {
+            const searchTerm = filterText.toLowerCase();
+            let filteredRecords = records.filter(r => {
+                const balance = r.amount - r.payments.reduce((sum, p) => sum + p.amount, 0);
+                const isInDateRange = (!filters.startDate || r.recordDate >= filters.startDate) && (!filters.endDate || r.recordDate <= filters.endDate);
+                const matchesPending = !filters.pendingOnly || balance > 0;
+                const matchesSearch = !searchTerm || (r.vehicleNumber.toLowerCase().includes(searchTerm) || r.ownerName.toLowerCase().includes(searchTerm) || r.fromLocation.toLowerCase().includes(searchTerm) || r.toLocation.toLowerCase().includes(searchTerm));
+                return isInDateRange && matchesPending && matchesSearch;
+            });
+            filteredRecords.sort((a, b) => {
+                let valA, valB;
+                if(sortColumn === 'balance') {
+                    valA = a.amount - a.payments.reduce((s, p) => s + p.amount, 0);
+                    valB = b.amount - b.payments.reduce((s, p) => s + p.amount, 0);
+                } else if(sortColumn === 'id') {
+                    valA = a.recordNumber || 0; // Sort by the numeric ID
+                    valB = b.recordNumber || 0;
+                }
+                else { valA = a[sortColumn]; valB = b[sortColumn]; }
+                if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+                if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+            if (filteredRecords.length === 0) { noRecordsMessage.style.display = 'block'; paginationControls.style.display = 'none'; recordsContainer.innerHTML = ''; tableBody.innerHTML = ''; noRecordsMessage.querySelector('.font-semibold').textContent = records.length > 0 ? 'No records match your search/filter.' : 'No records found.'; noRecordsMessage.querySelector('p:last-child').style.display = records.length > 0 ? 'none' : 'block'; }
+            else { noRecordsMessage.style.display = 'none'; paginationControls.style.display = 'flex'; }
+            const totalPages = Math.ceil(filteredRecords.length / recordsPerPage);
+            if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+            const paginatedRecords = filteredRecords.slice((currentPage - 1) * recordsPerPage, (currentPage - 1) * recordsPerPage + recordsPerPage);
+            if(currentView === 'card') renderCardView(paginatedRecords); else renderTableView(paginatedRecords);
+            renderPagination(filteredRecords.length);
+        };
+        const createActionButtons = (record) => {
+            const container = document.createElement('div');
+            container.className = "flex justify-end items-center space-x-1";
+            container.innerHTML = `<button data-action="print" data-id="${record.id}" class="p-2 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors" title="Print"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2.75C5 1.784 5.784 1 6.75 1h6.5c.966 0 1.75.784 1.75 1.75v3.552c.377.066.74.18 1.085.337.382.175.728.423 1.036.73l.1.099c.41.409.736.883.96 1.385.225.502.344 1.033.344 1.572V15c0 .966-.784 1.75-1.75 1.75h-.344c-.233.51-.562.98-.972 1.385l-.098.1c-.309.308-.654.556-1.037.73A8.996 8.996 0 0113.25 19h-6.5a8.996 8.996 0 01-2.085-.337c-.383-.174-.728-.422-1.037-.73l-.098-.1a3.001 3.001 0 01-.972-1.385H3.75A1.75 1.75 0 012 15V9.743c0-.54.119-1.07.344-1.572.224-.502.55-.976.96-1.385l.1-.099c.308-.308.654-.556 1.036-.73.345-.157.708-.27 1.085-.337V2.75zM8.75 8a.75.75 0 01.75.75v.5a.75.75 0 01-1.5 0v-.5A.75.75 0 018.75 8zM7 9.25a.75.75 0 00-1.5 0v.5a.75.75 0 001.5 0v-.5zM12.25 8a.75.75 0 01.75.75v.5a.75.75 0 01-1.5 0v-.5a.75.75 0 01.75-.75zM11 9.25a.75.75 0 00-1.5 0v.5a.75.75 0 001.5 0v-.5zM14.25 8.5a.75.75 0 01.75-.75h.5a.75.75 0 010 1.5h-.5a.75.75 0 01-.75-.75zM13 7.25a.75.75 0 00-1.5 0v.5a.75.75 0 001.5 0v-.5z" clip-rule="evenodd" /></svg></button><button data-action="pdf" data-id="${record.id}" class="p-2 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors" title="Download PDF"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd" /></svg></button><button data-action="edit" data-id="${record.id}" class="p-2 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors" title="Edit Record"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg></button><button data-action="delete" data-id="${record.id}" class="p-2 rounded-full text-gray-400 hover:bg-red-500 hover:text-white transition-colors" title="Delete Record"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>`;
+            return container;
+        };
+        const renderCardView = (recordsToRender) => {
+            recordsContainer.innerHTML = ''; const fragment = document.createDocumentFragment();
+            recordsToRender.forEach(record => {
+                const totalPaid = record.payments.reduce((sum, p) => sum + p.amount, 0); const balance = record.amount - totalPaid;
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 hover:border-indigo-500 dark:hover:border-indigo-500 transition-all duration-300 transform hover:-translate-y-1 flex flex-col";
+                card.innerHTML = `<div class="flex-grow"><div class="flex justify-between items-start"><div><h3 class="text-xl font-bold text-gray-900 dark:text-white">${record.vehicleNumber}</h3><p class="text-sm text-gray-400">${new Date(record.recordDate).toLocaleDateString()}</p></div><span class="text-xs font-mono bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-1 rounded-full">#${String(record.recordNumber || 0).padStart(5, '0')}</span></div><p class="text-gray-500 dark:text-gray-400 mb-4 mt-1">${record.ownerName}</p><div class="text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center space-x-2 mb-2"><span>${record.fromLocation}</span><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg><span>${record.toLocation}</span></div><dl class="space-y-2 mt-4 border-t border-gray-200 dark:border-gray-700 pt-4"><div class="flex justify-between text-sm"><dt class="text-gray-500 dark:text-gray-400">Total Amount:</dt><dd class="text-green-600 dark:text-green-400 font-semibold">₹ ${record.amount.toLocaleString()}</dd></div><div class="flex justify-between text-sm"><dt class="text-gray-500 dark:text-gray-400">Total Paid:</dt><dd class="text-gray-700 dark:text-gray-200 font-semibold">₹ ${totalPaid.toLocaleString()}</dd></div><div class="flex justify-between text-sm"><dt class="text-gray-500 dark:text-gray-400">Balance:</dt><dd class="${balance > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-200'} font-semibold">₹ ${balance.toLocaleString()}</dd></div></dl></div><div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700"></div>`;
+                card.lastElementChild.appendChild(createActionButtons(record)); fragment.appendChild(card);
+            });
+            recordsContainer.appendChild(fragment);
+        };
+        const renderTableView = (recordsToRender) => {
+            tableBody.innerHTML = ''; const fragment = document.createDocumentFragment();
+            recordsToRender.forEach(record => {
+                const totalPaid = record.payments.reduce((sum, p) => sum + p.amount, 0); const balance = record.amount - totalPaid;
+                const row = document.createElement('tr');
+                row.className = "bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600";
+                row.innerHTML = `<td class="px-6 py-4 font-medium text-gray-900 dark:text-white">#${String(record.recordNumber || 0).padStart(5, '0')}</td><td class="px-6 py-4">${new Date(record.recordDate).toLocaleDateString()}</td><td class="px-6 py-4">${record.vehicleNumber}</td><td class="px-6 py-4">${record.ownerName}</td><td class="px-6 py-4">₹ ${record.amount.toLocaleString()}</td><td class="px-6 py-4 font-semibold ${balance > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}">₹ ${balance.toLocaleString()}</td><td class="px-6 py-4 text-right"></td>`;
+                row.lastElementChild.appendChild(createActionButtons(record)); fragment.appendChild(row);
+            });
+            tableBody.appendChild(fragment);
+        };
+        const renderPagination = (totalItems) => {
+            const totalPages = Math.ceil(totalItems / recordsPerPage); paginationControls.innerHTML = ''; if (totalPages <= 1) return;
+            const startItem = (currentPage - 1) * recordsPerPage + 1; const endItem = Math.min(startItem + recordsPerPage - 1, totalItems);
+            paginationControls.innerHTML = `<div><p class="text-sm text-gray-700 dark:text-gray-400">Showing <span class="font-medium">${startItem}</span> to <span class="font-medium">${endItem}</span> of <span class="font-medium">${totalItems}</span> results</p></div><div class="flex space-x-2"><button id="prev-page" class="px-4 py-2 text-sm font-medium bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-600'}">Previous</button><button id="next-page" class="px-4 py-2 text-sm font-medium bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-600'}">Next</button></div>`;
+        };
+        const updateStats = () => {
+            const totalRecords = records.length;
+            const now = new Date(); const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const thisMonthRecords = records.filter(r => new Date(r.recordDate) >= startOfMonth).length;
+            const totalRevenue = records.reduce((sum, r) => sum + r.amount, 0);
+            const pendingBalance = records.reduce((sum, r) => { const totalPaid = r.payments.reduce((pSum, p) => pSum + p.amount, 0); return sum + (r.amount - totalPaid); }, 0);
+            document.getElementById('stat-total-records').textContent = totalRecords;
+            document.getElementById('stat-this-month').textContent = thisMonthRecords;
+            document.getElementById('stat-total-revenue').textContent = `₹${totalRevenue.toLocaleString()}`;
+            document.getElementById('stat-pending-balance').textContent = `₹${pendingBalance.toLocaleString()}`;
+        };
+        const exportToXLSX = (data, fileName) => {
+            const dataToExport = data.map(r => { const totalPaid = r.payments.reduce((sum, p) => sum + p.amount, 0); const balance = r.amount - totalPaid; const customFields = (r.customFields || []).reduce((obj, item) => { obj[item.label] = item.value; return obj; }, {}); return { ID: r.id, Date: r.recordDate, Vehicle_Number: r.vehicleNumber, Owner_Name: r.ownerName, From: r.fromLocation, To: r.toLocation, Quantity: r.quantity, Total_Amount: r.amount, Total_Paid: totalPaid, Balance: balance, ...customFields, Payments: JSON.stringify(r.payments) } });
+            const worksheet = XLSX.utils.json_to_sheet(dataToExport); const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Records"); XLSX.writeFile(workbook, `${fileName}.xlsx`); showToast("Exported to XLSX!");
+        };
+        const applyTheme = (theme) => {
+            const lightIcon = document.getElementById('theme-icon-light');
+            const darkIcon = document.getElementById('theme-icon-dark');
+            if (theme === 'dark') { 
+                document.documentElement.classList.add('dark');
+                lightIcon.classList.remove('hidden');
+                darkIcon.classList.add('hidden');
+            } else { 
+                document.documentElement.classList.remove('dark');
+                lightIcon.classList.add('hidden');
+                darkIcon.classList.remove('hidden');
+            }
+        };
+        const handleActions = (e) => {
+            const button = e.target.closest('button[data-action]'); if (!button) return;
+            const action = button.dataset.action; const id = button.dataset.id; if (!id) return;
+            switch (action) { case 'edit': openRecordModal(id); break; case 'delete': deleteRecord(id); break; case 'pdf': generatePDF(id); break; case 'print': printRecord(id); break; }
+        };
+
+        // Event Listeners
+        addNewRecordBtn.addEventListener('click', () => openRecordModal());
+        closeModalBtns.forEach(btn => btn.addEventListener('click', closeModal));
+        modalBackdrop.addEventListener('click', closeModal);
+        recordForm.addEventListener('submit', handleFormSubmit);
+        recordForm.addEventListener('input', () => { isFormDirty = true; updateBalance(); });
+        recordForm.addEventListener('reset', () => isFormDirty = false);
+        const debouncedRender = debounce(renderRecords, 300);
+        searchInput.addEventListener('input', (e) => debouncedRender(e.target.value));
+        addPaymentBtn.addEventListener('click', () => addPaymentField());
+        settingsBtn.addEventListener('click', () => { appTitleInput.value = appTitle; openModal(settingsModal); });
+        
+        cardViewBtn.addEventListener('click', () => switchView('card'));
+        tableViewBtn.addEventListener('click', () => switchView('table'));
+        recordsContainer.addEventListener('click', handleActions);
+        tableViewContainer.addEventListener('click', handleActions);
+        paginationControls.addEventListener('click', (e) => {
+            const totalRecords = records.filter(r => { /* apply filters */ return true; }).length;
+            const totalPages = Math.ceil(totalRecords / recordsPerPage);
+            if (e.target.id === 'prev-page') { if (currentPage > 1) { currentPage--; renderRecords(); } }
+            else if (e.target.id === 'next-page') { if (currentPage < totalPages) { currentPage++; renderRecords(); } }
+        });
+        tableHead.addEventListener('click', (e) => {
+            const th = e.target.closest('th[data-sort]'); if (!th) return;
+            const column = th.dataset.sort;
+            if (sortColumn === column) { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortColumn = column; sortDirection = 'desc'; }
+            tableHead.querySelectorAll('th[data-sort]').forEach(header => header.removeAttribute('data-sort-direction'));
+            th.setAttribute('data-sort-direction', sortDirection);
+            renderRecords();
+        });
+        filterBtn.addEventListener('click', () => openModal(filterModal));
+        filterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            filters.startDate = document.getElementById('filter-start-date').value;
+            filters.endDate = document.getElementById('filter-end-date').value;
+            filters.pendingOnly = document.getElementById('filter-pending-balance').checked;
+            currentPage = 1; renderRecords(); closeModal();
+        });
+        filterForm.addEventListener('reset', () => { filters = { startDate: null, endDate: null, pendingOnly: false }; currentPage = 1; renderRecords(); closeModal(); });
+        exportBtnGroup.addEventListener('click', () => exportOptions.classList.toggle('hidden'));
+        document.addEventListener('click', (e) => { if (!exportBtnGroup.contains(e.target)) { exportOptions.classList.add('hidden'); } });
+        exportAllXlsBtn.addEventListener('click', (e) => { e.preventDefault(); exportToXLSX(records, `${appTitle.replace(/\s/g, '_')}_All_Records`); });
+        exportMonthlyXlsBtn.addEventListener('click', (e) => {
+            e.preventDefault(); const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+            const monthlyRecords = records.filter(r => r.recordDate >= startOfMonth && r.recordDate <= endOfMonth);
+            exportToXLSX(monthlyRecords, `${appTitle.replace(/\s/g, '_')}_Monthly_Report`);
+        });
+        exportCustomXlsBtn.addEventListener('click', (e) => { e.preventDefault(); openModal(customReportModal); });
+        customReportForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const startDate = document.getElementById('report-start-date').value;
+            const endDate = document.getElementById('report-end-date').value;
+            const customRecords = records.filter(r => r.recordDate >= startDate && r.recordDate <= endDate);
+            exportToXLSX(customRecords, `${appTitle.replace(/\s/g, '_')}_Custom_Report_${startDate}_to_${endDate}`);
+            closeModal();
         });
     </script>
 </body>
 </html>
+
 
